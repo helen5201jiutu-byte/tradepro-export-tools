@@ -66,14 +66,25 @@ body {
   left: 0; top: 0; bottom: 0;
   width: var(--sidebar-w);
   background: var(--sidebar-bg);
+  background-image:
+    linear-gradient(180deg, rgba(201,162,39,0.04) 0%, transparent 30%),
+    linear-gradient(180deg, transparent 70%, rgba(45,74,138,0.06) 100%);
   display: flex;
   flex-direction: column;
   z-index: 100;
   transition: transform 0.3s ease;
 }
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(201,162,39,0.15) 20%, rgba(201,162,39,0.15) 80%, transparent);
+}
 .sidebar-header {
   padding: 28px 24px 22px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
 }
 .sidebar-logo {
   display: flex;
@@ -81,9 +92,9 @@ body {
   gap: 10px;
 }
 .logo-icon {
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-  border-radius: 8px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,6 +103,12 @@ body {
   font-weight: 700;
   color: #141821;
   flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(201,162,39,0.3);
+  animation: logoGlow 3s ease-in-out infinite;
+}
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 4px 14px rgba(201,162,39,0.25); }
+  50% { box-shadow: 0 4px 20px rgba(201,162,39,0.5); }
 }
 .logo-text {
   font-family: var(--font-display);
@@ -110,7 +127,7 @@ body {
 
 .sidebar-nav {
   flex: 1;
-  padding: 16px 12px;
+  padding: 14px 10px;
   overflow-y: auto;
 }
 .nav-section-label {
@@ -118,33 +135,81 @@ body {
   color: #4a5268;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  padding: 12px 12px 6px;
+  padding: 14px 14px 6px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(74,82,104,0.4), transparent);
 }
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--sidebar-text);
   font-size: 13.5px;
   font-weight: 400;
-  transition: all 0.18s ease;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 2px;
   user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 3px; height: 0;
+  background: var(--gold);
+  border-radius: 0 3px 3px 0;
+  transform: translateY(-50%);
+  transition: height 0.25s ease;
+}
+.nav-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(201,162,39,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.22s ease;
 }
 .nav-item:hover {
   background: var(--sidebar-hover);
   color: #c0c8d8;
+  transform: translateX(3px);
+}
+.nav-item:hover::after {
+  opacity: 1;
+}
+.nav-item:hover .nav-icon {
+  transform: scale(1.2) rotate(-5deg);
 }
 .nav-item.active {
   background: var(--sidebar-active);
+  background-image: linear-gradient(90deg, rgba(201,162,39,0.1), transparent 60%);
   color: var(--sidebar-text-active);
   font-weight: 500;
 }
-.nav-item.active .nav-icon { color: var(--gold); }
+.nav-item.active::before {
+  height: 60%;
+}
+.nav-item.active .nav-icon {
+  color: var(--gold);
+  transform: scale(1.1);
+  animation: iconPulse 2.5s ease-in-out infinite;
+}
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1.1); }
+  50% { transform: scale(1.25); }
+}
 .nav-icon {
   width: 20px; height: 20px;
   display: flex;
@@ -152,7 +217,15 @@ body {
   justify-content: center;
   flex-shrink: 0;
   font-size: 16px;
-  transition: color 0.18s;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.18s;
+  z-index: 1;
+}
+.nav-item span:last-child {
+  transition: transform 0.22s ease;
+  z-index: 1;
+}
+.nav-item:hover span:last-child {
+  transform: translateX(2px);
 }
 .nav-badge {
   margin-left: auto;
@@ -162,6 +235,7 @@ body {
   color: #fff;
   padding: 2px 6px;
   border-radius: 10px;
+  z-index: 1;
 }
 
 .sidebar-footer {
@@ -169,6 +243,21 @@ body {
   border-top: 1px solid rgba(255,255,255,0.06);
   font-size: 11px;
   color: #4a5268;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sidebar-footer::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+  animation: pulseDot 2s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* ========== Main Content ========== */
@@ -885,7 +974,7 @@ body {
     <div class="topbar-title" id="topbarTitle">形式发票 <span class="breadcrumb">/ Proforma Invoice</span></div>
     <div class="topbar-actions no-print">
       <button class="btn btn-outline btn-sm" onclick="saveCurrentPage()">💾 保存</button>
-      <button class="btn btn-gold btn-sm" onclick="window.print()" id="printBtn" style="display:none">🖨️ 打印 / PDF</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()" id="printBtn" style="display:none">🖨️ 打印 / PDF</button>
     </div>
   </div>
   <div class="content-area" id="contentArea">
@@ -1001,6 +1090,10 @@ body {
   </div>
 
   <div id="proforma-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
     <div class="preview-area" id="proforma-preview-area"></div>
   </div>
 </div>
@@ -1115,6 +1208,10 @@ body {
   </div>
 
   <div id="commercial-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('commercial')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
     <div class="preview-area" id="commercial-preview-area"></div>
   </div>
 </div>
@@ -1212,6 +1309,10 @@ body {
   </div>
 
   <div id="packing-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('packing')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
     <div class="preview-area" id="packing-preview-area"></div>
   </div>
 </div>
@@ -1281,6 +1382,10 @@ body {
   </div>
 
   <div id="marks-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('marks')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
     <div class="preview-area">
       <div id="marks-preview-content"></div>
     </div>
@@ -1370,6 +1475,10 @@ body {
   </div>
 
   <div id="spec-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('spec')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
     <div class="preview-area" id="spec-preview-area"></div>
   </div>
 </div>
@@ -2212,40 +2321,47 @@ function recalcWeight() {
   let types = 0;
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
+    const desc = inputs[0]?.value || '';
     const qty = parseFloat(inputs[1]?.value) || 0;
     const l = parseFloat(inputs[2]?.value) || 0;
     const w = parseFloat(inputs[3]?.value) || 0;
     const h = parseFloat(inputs[4]?.value) || 0;
     const uw = parseFloat(inputs[5]?.value) || 0;
     const subtotal = qty * uw;
-    // Volume weight: L×W×H(cm) × qty / divisor
     const volWeight = (l * w * h * qty) / divisor;
     const chargeable = Math.max(subtotal, volWeight);
     totalQty += qty;
     totalWeight += subtotal;
     totalVolWeight += volWeight;
-    if (inputs[0]?.value || qty > 0) types++;
-    r.querySelector('td:nth-child(8)').textContent = fmtNum(subtotal);
-    r.querySelector('td:nth-child(9)').textContent = fmtNum(volWeight);
-    r.querySelector('td:nth-child(10)').textContent = fmtNum(chargeable);
+    if (desc || qty > 0) types++;
+    // Update row cells safely
+    const tds = r.querySelectorAll('td');
+    if (tds[7]) tds[7].textContent = fmtNum(subtotal);
+    if (tds[8]) tds[8].textContent = fmtNum(volWeight);
+    if (tds[9]) tds[9].textContent = fmtNum(chargeable);
   });
   const totalChargeable = Math.max(totalWeight, totalVolWeight);
-  const chargeType = totalVolWeight > totalWeight ? '抛货(体积重)' : '实重';
+  const isVolHeavy = totalVolWeight > totalWeight;
+  const chargeType = isVolHeavy ? '抛货 (体积重)' : '实重';
+  const unitLabel = unit.toUpperCase();
 
+  // Table footer totals
   document.getElementById('wt-total-qty').textContent = fmtNum(totalQty, 0);
   document.getElementById('wt-total-weight').textContent = fmtNum(totalWeight);
   document.getElementById('wt-total-volweight').textContent = fmtNum(totalVolWeight);
   document.getElementById('wt-total-chargeable').textContent = fmtNum(totalChargeable);
 
+  // Right panel summary cards — set number and unit separately to avoid overwriting
   document.getElementById('wt-sum-types').innerHTML = types + '<span class="summary-unit">种</span>';
   document.getElementById('wt-sum-qty').innerHTML = fmtNum(totalQty, 0) + '<span class="summary-unit">PCS</span>';
-  document.getElementById('wt-sum-weight').innerHTML = fmtNum(totalWeight) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
-  document.getElementById('wt-sum-weight-unit').textContent = unit.toUpperCase();
-  document.getElementById('wt-sum-volweight').innerHTML = fmtNum(totalVolWeight) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
-  document.getElementById('wt-sum-volweight-unit').textContent = unit.toUpperCase();
-  document.getElementById('wt-sum-chargeable').innerHTML = fmtNum(totalChargeable) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
-  document.getElementById('wt-sum-chargeable-unit').textContent = unit.toUpperCase();
-  document.getElementById('wt-charge-type').textContent = chargeType;
+  document.getElementById('wt-sum-weight').innerHTML = fmtNum(totalWeight) + '<span class="summary-unit">' + unitLabel + '</span>';
+  document.getElementById('wt-sum-volweight').innerHTML = fmtNum(totalVolWeight) + '<span class="summary-unit">' + unitLabel + '</span>';
+  document.getElementById('wt-sum-chargeable').innerHTML = fmtNum(totalChargeable) + '<span class="summary-unit">' + unitLabel + '</span>';
+
+  // Charge type with color coding
+  const chargeTypeEl = document.getElementById('wt-charge-type');
+  chargeTypeEl.textContent = chargeType;
+  chargeTypeEl.style.color = isVolHeavy ? 'var(--gold-dim)' : 'var(--accent-blue)';
 }
 
 // ==================== CONTAINER CALCULATOR ====================
@@ -2433,6 +2549,85 @@ function addSpecRow(data) {
 }
 
 // ==================== PREVIEW TOGGLE ====================
+
+// Print the current document, then clear the form data
+function printAndClear() {
+  window.print();
+  // Use afterprint to clear after the print dialog closes
+  const clearHandler = () => {
+    setTimeout(() => {
+      if (confirm('打印完成。是否清空当前单据的编辑数据？\n清空后下次打开将不会显示本次填写的信息。')) {
+        resetCurrentDocForm();
+      }
+      window.removeEventListener('afterprint', clearHandler);
+    }, 300);
+  };
+  window.addEventListener('afterprint', clearHandler);
+  // Fallback: if afterprint doesn't fire (some browsers), use timeout
+  setTimeout(() => {
+    window.removeEventListener('afterprint', clearHandler);
+  }, 60000);
+}
+
+// Clear the form for the current document page and remove its saved data
+function resetCurrentDocForm() {
+  const page = App.currentPage;
+  if (!['proforma','commercial','packing','marks','spec'].includes(page)) return;
+
+  // Clear data in App.data
+  if (page === 'proforma') {
+    App.data.proforma = { items: [] };
+  } else if (page === 'commercial') {
+    App.data.commercial = { items: [] };
+  } else if (page === 'packing') {
+    App.data.packing = { items: [] };
+  } else if (page === 'marks') {
+    App.data.marks = {};
+  } else if (page === 'spec') {
+    App.data.spec = { params: [] };
+  }
+
+  // Clear all form inputs on the current page
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) {
+    pageEl.querySelectorAll('input, textarea').forEach(el => {
+      if (el.type === 'file') return;
+      el.value = '';
+    });
+    pageEl.querySelectorAll('select').forEach(el => {
+      el.selectedIndex = 0;
+    });
+    // Clear table rows
+    pageEl.querySelectorAll('tbody').forEach(tb => {
+      tb.innerHTML = '';
+    });
+    // Reset toggle buttons
+    pageEl.querySelectorAll('.toggle-btn').forEach(t => t.classList.remove('on'));
+  }
+
+  // Add fresh empty rows
+  if (page === 'proforma') addRow('proforma');
+  else if (page === 'commercial') addRow('commercial');
+  else if (page === 'packing') addRow('packing');
+  else if (page === 'spec') { addSpecRow(); addSpecRow(); addSpecRow(); }
+
+  // Reset date and invoice number
+  const today = new Date().toISOString().split('T')[0];
+  if (page === 'proforma') {
+    document.getElementById('pi-date').value = today;
+    document.getElementById('pi-no').value = 'PI-' + today.replace(/-/g,'') + '-001';
+  } else if (page === 'commercial') {
+    document.getElementById('ci-date').value = today;
+    document.getElementById('ci-no').value = 'CI-' + today.replace(/-/g,'') + '-001';
+  } else if (page === 'packing') {
+    document.getElementById('pl-date').value = today;
+    document.getElementById('pl-no').value = 'PL-' + today.replace(/-/g,'') + '-001';
+  }
+
+  // Save cleared data
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+}
+
 function togglePreview(docType) {
   const editEl = document.getElementById(docType + '-edit');
   const prevEl = document.getElementById(docType + '-preview');
@@ -2543,7 +2738,7 @@ function renderProformaPreview(companyBlock, companyName) {
           <div class="content">${(pi.remarks||'').replace(/\n/g,'<br>')}</div>
         </div>
       </div>
-      ${pi.bank ? `<div style="margin-top:16px"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
+      ${pi.bank ? `<div class="doc-footer" style="margin-top:0"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
       <div class="doc-signature">
         <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
         <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
