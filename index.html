@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TradePro · 外贸业务工具系统</title>
+<title>LAB · 外贸业务工具系统</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -726,6 +726,46 @@ body {
   color: var(--text-secondary);
 }
 
+/* ========== Product Image ========== */
+.img-thumb {
+  width: 40px; height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.img-upload-btn {
+  width: 40px; height: 40px;
+  border: 1px dashed var(--border-dark);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-muted);
+  background: #f8f9fd;
+  vertical-align: middle;
+  transition: all 0.15s;
+}
+.img-upload-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+.img-cell { text-align: center; padding: 4px !important; }
+.img-preview-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  cursor: zoom-out;
+}
+.img-preview-overlay img { max-width: 80vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.save-lib-btn {
+  font-size: 11px; padding: 2px 8px; border-radius: 3px;
+  background: transparent; border: 1px solid var(--gold-light); color: var(--gold-dim);
+  cursor: pointer; white-space: nowrap;
+}
+.save-lib-btn:hover { background: #fdf8e8; }
+
 /* ========== Empty State ========== */
 .empty-state {
   text-align: center;
@@ -786,9 +826,9 @@ body {
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <div class="logo-icon">T</div>
+      <div class="logo-icon">L</div>
       <div>
-        <div class="logo-text">TradePro</div>
+        <div class="logo-text">LAB</div>
         <div class="logo-sub">Export Tools</div>
       </div>
     </div>
@@ -835,7 +875,7 @@ body {
     </div>
   </nav>
   <div class="sidebar-footer">
-    TradePro v1.0 · 数据本地存储
+    LAB v1.1 · 数据本地存储
   </div>
 </aside>
 
@@ -922,19 +962,20 @@ body {
             <thead>
               <tr>
                 <th style="width:30px">#</th>
+                <th style="width:50px" class="no-print">图片</th>
                 <th>品名 / Description</th>
                 <th style="width:120px">规格 / Spec</th>
                 <th style="width:80px">数量</th>
                 <th style="width:80px">单位</th>
                 <th style="width:100px">单价</th>
                 <th style="width:120px">金额</th>
-                <th style="width:40px" class="no-print"></th>
+                <th style="width:70px" class="no-print">操作</th>
               </tr>
             </thead>
             <tbody id="pi-tbody"></tbody>
             <tfoot>
               <tr>
-                <td colspan="6" style="text-align:right;font-weight:600">合计 Total:</td>
+                <td colspan="7" style="text-align:right;font-weight:600">合计 Total:</td>
                 <td class="num" id="pi-total" style="font-weight:700;color:var(--accent-blue)">0.00</td>
                 <td class="no-print"></td>
               </tr>
@@ -1033,19 +1074,20 @@ body {
             <thead>
               <tr>
                 <th style="width:30px">#</th>
+                <th style="width:50px" class="no-print">图片</th>
                 <th>品名 / Description</th>
                 <th style="width:100px">HS编码</th>
                 <th style="width:90px">数量</th>
                 <th style="width:70px">单位</th>
                 <th style="width:90px">单价</th>
                 <th style="width:110px">金额</th>
-                <th style="width:40px" class="no-print"></th>
+                <th style="width:70px" class="no-print">操作</th>
               </tr>
             </thead>
             <tbody id="ci-tbody"></tbody>
             <tfoot>
               <tr>
-                <td colspan="6" style="text-align:right;font-weight:600">合计 Total:</td>
+                <td colspan="7" style="text-align:right;font-weight:600">合计 Total:</td>
                 <td class="num" id="ci-total" style="font-weight:700;color:var(--accent-blue)">0.00</td>
                 <td class="no-print"></td>
               </tr>
@@ -1123,6 +1165,7 @@ body {
             <thead>
               <tr>
                 <th style="width:30px">#</th>
+                <th style="width:50px" class="no-print">图片</th>
                 <th style="width:70px">箱号</th>
                 <th>品名 / Description</th>
                 <th style="width:70px">数量</th>
@@ -1133,13 +1176,13 @@ body {
                 <th style="width:70px">宽(cm)</th>
                 <th style="width:70px">高(cm)</th>
                 <th style="width:90px">体积(CBM)</th>
-                <th style="width:40px" class="no-print"></th>
+                <th style="width:70px" class="no-print">操作</th>
               </tr>
             </thead>
             <tbody id="pl-tbody"></tbody>
             <tfoot>
               <tr>
-                <td colspan="3" style="text-align:right;font-weight:600">合计:</td>
+                <td colspan="4" style="text-align:right;font-weight:600">合计:</td>
                 <td class="num" id="pl-total-qty" style="font-weight:600">0</td>
                 <td></td>
                 <td class="num" id="pl-total-nw" style="font-weight:600">0</td>
@@ -1336,7 +1379,7 @@ body {
   <div class="page-header">
     <div>
       <div class="page-title">重量计算器</div>
-      <div class="page-subtitle">Weight Calculator · 多件货物实重累加计算</div>
+      <div class="page-subtitle">Weight Calculator · 实重与抛货（体积重量）对比，取计费重量</div>
     </div>
     <div class="no-print">
       <button class="btn btn-primary btn-sm" onclick="addWeightRow()">+ 添加货物</button>
@@ -1354,6 +1397,13 @@ body {
               <option value="kg">kg</option>
               <option value="lb">lb</option>
             </select>
+            <span style="font-size:12px;color:var(--text-muted);margin-left:8px">抛货系数:</span>
+            <select class="form-select" style="width:110px;padding:4px 8px;font-size:12px" id="wt-divisor" onchange="recalcWeight()">
+              <option value="6000">6000 (空运)</option>
+              <option value="5000">5000 (快递)</option>
+              <option value="363">363 (海运CBM×363)</option>
+              <option value="1000">1000 (自定义)</option>
+            </select>
           </div>
         </div>
         <div class="card-body" style="padding:0">
@@ -1363,18 +1413,26 @@ body {
                 <tr>
                   <th style="width:30px">#</th>
                   <th>品名 / Description</th>
-                  <th style="width:90px">数量</th>
-                  <th style="width:100px">单件重量</th>
-                  <th style="width:120px">小计重量</th>
+                  <th style="width:70px">数量</th>
+                  <th style="width:60px">长(cm)</th>
+                  <th style="width:60px">宽(cm)</th>
+                  <th style="width:60px">高(cm)</th>
+                  <th style="width:85px">单件实重</th>
+                  <th style="width:85px">小计实重</th>
+                  <th style="width:90px">体积重量</th>
+                  <th style="width:90px">计费重量</th>
                   <th style="width:40px" class="no-print"></th>
                 </tr>
               </thead>
               <tbody id="wt-tbody"></tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3" style="text-align:right;font-weight:600">总件数 / Total Qty:</td>
+                  <td colspan="2" style="text-align:right;font-weight:600">合计:</td>
                   <td class="num" id="wt-total-qty" style="font-weight:600">0</td>
-                  <td class="num" id="wt-total-weight" style="font-weight:700;color:var(--accent-blue);font-size:15px">0.00</td>
+                  <td colspan="4"></td>
+                  <td class="num" id="wt-total-weight" style="font-weight:600">0.00</td>
+                  <td class="num" id="wt-total-volweight" style="font-weight:600">0.00</td>
+                  <td class="num" id="wt-total-chargeable" style="font-weight:700;color:var(--accent-blue);font-size:15px">0.00</td>
                   <td class="no-print"></td>
                 </tr>
               </tfoot>
@@ -1397,17 +1455,21 @@ body {
               <div class="summary-label">总件数</div>
               <div class="summary-value" id="wt-sum-qty">0<span class="summary-unit" id="wt-sum-qty-unit">PCS</span></div>
             </div>
+            <div class="summary-box">
+              <div class="summary-label">总实重</div>
+              <div class="summary-value" id="wt-sum-weight">0.00<span class="summary-unit" id="wt-sum-weight-unit">KG</span></div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">总体积重量</div>
+              <div class="summary-value" id="wt-sum-volweight">0.00<span class="summary-unit" id="wt-sum-volweight-unit">KG</span></div>
+            </div>
             <div class="summary-box highlight">
-              <div class="summary-label">总重量</div>
-              <div class="summary-value gold" id="wt-sum-weight">0.00<span class="summary-unit" id="wt-sum-weight-unit">KG</span></div>
+              <div class="summary-label">总计费重量</div>
+              <div class="summary-value gold" id="wt-sum-chargeable">0.00<span class="summary-unit" id="wt-sum-chargeable-unit">KG</span></div>
             </div>
             <div class="summary-box">
-              <div class="summary-label">折合磅</div>
-              <div class="summary-value" id="wt-sum-lb">0.00<span class="summary-unit">LB</span></div>
-            </div>
-            <div class="summary-box">
-              <div class="summary-label">折合吨</div>
-              <div class="summary-value" id="wt-sum-ton">0.000<span class="summary-unit">TON</span></div>
+              <div class="summary-label">计费类型</div>
+              <div class="summary-value" id="wt-charge-type" style="font-size:14px">-</div>
             </div>
           </div>
         </div>
@@ -1569,6 +1631,7 @@ body {
           <thead>
             <tr>
               <th style="width:30px">#</th>
+              <th style="width:60px">图片</th>
               <th>品名 / Description</th>
               <th style="width:120px">规格 / Spec</th>
               <th style="width:80px">单位</th>
@@ -1576,7 +1639,7 @@ body {
               <th style="width:80px">净重(kg)</th>
               <th style="width:80px">毛重(kg)</th>
               <th style="width:120px">箱规(cm)</th>
-              <th style="width:80px" class="no-print">操作</th>
+              <th style="width:60px" class="no-print">操作</th>
             </tr>
           </thead>
           <tbody id="lib-tbody"></tbody>
@@ -1767,7 +1830,7 @@ function collectPageData(page) {
         buyerName: v('pi-buyer-name'), buyerContact: v('pi-buyer-contact'),
         buyerAddr: v('pi-buyer-addr'), buyerTel: v('pi-buyer-tel'), buyerEmail: v('pi-buyer-email'),
         remarks: v('pi-remarks'), bank: v('pi-bank'),
-        items: collectTableRows('pi-tbody', ['desc','spec','qty','unit','price'])
+        items: collectTableRows('pi-tbody', ['img','desc','spec','qty','unit','price'])
       };
       break;
     case 'commercial':
@@ -1777,14 +1840,14 @@ function collectPageData(page) {
         origin: v('ci-origin'), transport: v('ci-transport'),
         buyerName: v('ci-buyer-name'), buyerAddr: v('ci-buyer-addr'), buyerVat: v('ci-buyer-vat'),
         marks: v('ci-marks'), packing: v('ci-packing'), declaration: v('ci-declaration'), remarks: v('ci-remarks'),
-        items: collectTableRows('ci-tbody', ['desc','hs','qty','unit','price'])
+        items: collectTableRows('ci-tbody', ['img','desc','hs','qty','unit','price'])
       };
       break;
     case 'packing':
       App.data.packing = {
         no: v('pl-no'), date: v('pl-date'), invNo: v('pl-inv-no'), terms: v('pl-terms'),
         from: v('pl-from'), to: v('pl-to'), buyer: v('pl-buyer'), marks: v('pl-marks'),
-        items: collectTableRows('pl-tbody', ['cartonNo','desc','qty','unit','nw','gw','l','w','h'])
+        items: collectTableRows('pl-tbody', ['img','cartonNo','desc','qty','unit','nw','gw','l','w','h'])
       };
       break;
     case 'marks':
@@ -1812,7 +1875,7 @@ function collectPageData(page) {
     case 'weight':
       App.data.weight = {
         unit: v('wt-unit'),
-        items: collectTableRows('wt-tbody', ['desc','qty','unitWeight'])
+        items: collectTableRows('wt-tbody', ['desc','qty','l','w','h','unitWeight'])
       };
       break;
     case 'container':
@@ -1822,7 +1885,7 @@ function collectPageData(page) {
       };
       break;
     case 'library':
-      App.data.products = collectTableRows('lib-tbody', ['name','spec','unit','price','nw','gw','l','w','h']);
+      App.data.products = collectTableRows('lib-tbody', ['img','name','spec','unit','price','nw','gw','l','w','h']);
       break;
   }
 }
@@ -1837,11 +1900,19 @@ function collectTableRows(tbodyId, fields) {
   if (!tbody) return [];
   const rows = [];
   tbody.querySelectorAll('tr').forEach(tr => {
-    const inputs = tr.querySelectorAll('input, select, textarea');
+    const inputs = tr.querySelectorAll('input:not([type=file]), select, textarea');
     if (inputs.length === 0) return;
     const row = {};
-    fields.forEach((f, i) => {
-      row[f] = inputs[i] ? inputs[i].value : '';
+    let inputIdx = 0;
+    fields.forEach(f => {
+      if (f === 'img') {
+        // Get image data from the row's img element or _imgData property
+        const imgEl = tr.querySelector('.img-thumb');
+        row.img = imgEl ? imgEl.src : (tr._imgData || '');
+      } else {
+        row[f] = inputs[inputIdx] ? inputs[inputIdx].value : '';
+        inputIdx++;
+      }
     });
     rows.push(row);
   });
@@ -1954,28 +2025,33 @@ const DOC_CONFIG = {
   proforma: {
     tbody: 'pi-tbody',
     fields: [
+      { name:'img', type:'image' },
       { name:'desc', placeholder:'Product name', style:'' },
       { name:'spec', placeholder:'Spec', style:'width:100%' },
       { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
       { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
-    totalFn: 'recalcProforma'
+    totalFn: 'recalcProforma',
+    fieldMap: { desc:'desc', spec:'spec', qty:'qty', unit:'unit', price:'price' }
   },
   commercial: {
     tbody: 'ci-tbody',
     fields: [
+      { name:'img', type:'image' },
       { name:'desc', placeholder:'Product name', style:'' },
       { name:'hs', placeholder:'HS Code', cls:'mono', style:'width:100%' },
       { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
       { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
-    totalFn: 'recalcCommercial'
+    totalFn: 'recalcCommercial',
+    fieldMap: { desc:'desc', hs:'hs', qty:'qty', unit:'unit', price:'price' }
   },
   packing: {
     tbody: 'pl-tbody',
     fields: [
+      { name:'img', type:'image' },
       { name:'cartonNo', placeholder:'C-1', cls:'mono', style:'width:100%' },
       { name:'desc', placeholder:'Product name', style:'' },
       { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
@@ -1986,7 +2062,8 @@ const DOC_CONFIG = {
       { name:'w', placeholder:'0', cls:'mono', style:'text-align:right' },
       { name:'h', placeholder:'0', cls:'mono', style:'text-align:right' }
     ],
-    totalFn: 'recalcPacking'
+    totalFn: 'recalcPacking',
+    fieldMap: { desc:'desc', qty:'qty', unit:'unit', nw:'nw', gw:'gw', l:'l', w:'w', h:'h' }
   }
 };
 
@@ -1999,21 +2076,32 @@ function addRow(docType, data) {
 
   tr.innerHTML = `<td class="num-col">${idx}</td>`;
   cfg.fields.forEach(f => {
-    let input;
-    if (f.type === 'select') {
+    if (f.type === 'image') {
+      const imgData = data ? (data.img || '') : '';
+      if (imgData) {
+        tr.innerHTML += `<td class="img-cell no-print"><img class="img-thumb" src="${imgData}" onclick="previewImage(this.src)" title="点击查看大图"></td>`;
+      } else {
+        tr.innerHTML += `<td class="img-cell no-print"><div class="img-upload-btn" onclick="uploadProductImage(this)" title="上传图片">📷</div></td>`;
+      }
+    } else if (f.type === 'select') {
       const opts = f.options.map(o => `<option value="${o}" ${data && data[f.name]===o?'selected':''}>${o}</option>`).join('');
-      input = `<select style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''}><option value="">${f.placeholder}</option>${opts}</select>`;
+      tr.innerHTML += `<td class="td-input"><select style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''}><option value="">${f.placeholder}</option>${opts}</select></td>`;
     } else {
-      input = `<input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}">`;
+      tr.innerHTML += `<td class="td-input"><input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     }
-    tr.innerHTML += `<td class="td-input">${input}</td>`;
   });
-  tr.innerHTML += `<td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();${cfg.totalFn}();debouncedSave()" title="删除">✕</button></td>`;
+  // Action buttons: save to library + delete
+  tr.innerHTML += `<td class="no-print" style="text-align:center;white-space:nowrap">
+    <button class="save-lib-btn" onclick="saveRowToLibrary(this,'${docType}')" title="保存到产品库">📥 存库</button>
+    <button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();${cfg.totalFn}();debouncedSave()" title="删除">✕</button>
+  </td>`;
 
   // Attach recalc listeners
   tr.querySelectorAll('input,select').forEach(inp => {
     inp.addEventListener('input', () => { window[cfg.totalFn](); debouncedSave(); });
   });
+  // Store img data on the row element
+  tr._imgData = data ? (data.img || '') : '';
 
   tbody.appendChild(tr);
   window[cfg.totalFn]();
@@ -2100,8 +2188,13 @@ function addWeightRow(data) {
     <td class="num-col">${idx}</td>
     <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.desc||''):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.qty||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.l||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.w||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.h||''):''}"></td>
     <td class="td-input"><input type="number" placeholder="0.00" class="mono" style="text-align:right" value="${data?(data.unitWeight||''):''}"></td>
     <td class="num" style="font-family:var(--font-mono);font-weight:500">0.00</td>
+    <td class="num" style="font-family:var(--font-mono);font-weight:500">0.00</td>
+    <td class="num" style="font-family:var(--font-mono);font-weight:600;color:var(--accent-blue)">0.00</td>
     <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();recalcWeight();debouncedSave()">✕</button></td>
   `;
   tr.querySelectorAll('input').forEach(inp => {
@@ -2114,31 +2207,45 @@ function addWeightRow(data) {
 function recalcWeight() {
   const rows = document.querySelectorAll('#wt-tbody tr');
   const unit = document.getElementById('wt-unit').value;
-  let totalQty = 0, totalWeight = 0;
+  const divisor = parseInt(document.getElementById('wt-divisor').value) || 6000;
+  let totalQty = 0, totalWeight = 0, totalVolWeight = 0;
   let types = 0;
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[1]?.value) || 0;
-    const uw = parseFloat(inputs[2]?.value) || 0;
+    const l = parseFloat(inputs[2]?.value) || 0;
+    const w = parseFloat(inputs[3]?.value) || 0;
+    const h = parseFloat(inputs[4]?.value) || 0;
+    const uw = parseFloat(inputs[5]?.value) || 0;
     const subtotal = qty * uw;
+    // Volume weight: L×W×H(cm) × qty / divisor
+    const volWeight = (l * w * h * qty) / divisor;
+    const chargeable = Math.max(subtotal, volWeight);
     totalQty += qty;
     totalWeight += subtotal;
+    totalVolWeight += volWeight;
     if (inputs[0]?.value || qty > 0) types++;
-    r.querySelector('td:nth-child(5)').textContent = fmtNum(subtotal);
+    r.querySelector('td:nth-child(8)').textContent = fmtNum(subtotal);
+    r.querySelector('td:nth-child(9)').textContent = fmtNum(volWeight);
+    r.querySelector('td:nth-child(10)').textContent = fmtNum(chargeable);
   });
+  const totalChargeable = Math.max(totalWeight, totalVolWeight);
+  const chargeType = totalVolWeight > totalWeight ? '抛货(体积重)' : '实重';
+
   document.getElementById('wt-total-qty').textContent = fmtNum(totalQty, 0);
   document.getElementById('wt-total-weight').textContent = fmtNum(totalWeight);
-
-  const lbWeight = unit === 'kg' ? totalWeight * 2.20462 : totalWeight;
-  const kgWeight = unit === 'lb' ? totalWeight * 0.453592 : totalWeight;
-  const tonWeight = (unit === 'kg' ? totalWeight : kgWeight) / 1000;
+  document.getElementById('wt-total-volweight').textContent = fmtNum(totalVolWeight);
+  document.getElementById('wt-total-chargeable').textContent = fmtNum(totalChargeable);
 
   document.getElementById('wt-sum-types').innerHTML = types + '<span class="summary-unit">种</span>';
   document.getElementById('wt-sum-qty').innerHTML = fmtNum(totalQty, 0) + '<span class="summary-unit">PCS</span>';
   document.getElementById('wt-sum-weight').innerHTML = fmtNum(totalWeight) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
   document.getElementById('wt-sum-weight-unit').textContent = unit.toUpperCase();
-  document.getElementById('wt-sum-lb').innerHTML = fmtNum(lbWeight) + '<span class="summary-unit">LB</span>';
-  document.getElementById('wt-sum-ton').innerHTML = fmtNum(tonWeight, 3) + '<span class="summary-unit">TON</span>';
+  document.getElementById('wt-sum-volweight').innerHTML = fmtNum(totalVolWeight) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
+  document.getElementById('wt-sum-volweight-unit').textContent = unit.toUpperCase();
+  document.getElementById('wt-sum-chargeable').innerHTML = fmtNum(totalChargeable) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
+  document.getElementById('wt-sum-chargeable-unit').textContent = unit.toUpperCase();
+  document.getElementById('wt-charge-type').textContent = chargeType;
 }
 
 // ==================== CONTAINER CALCULATOR ====================
@@ -2369,9 +2476,10 @@ function renderProformaPreview(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
+    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
+      <td>${imgHtml}${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
       <td class="center">${item.spec || ''}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
       <td class="center">${item.unit || ''}</td>
@@ -2452,9 +2560,10 @@ function renderCommercialPreview(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
+    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${item.desc || ''}</td>
+      <td>${imgHtml}${item.desc || ''}</td>
       <td>${item.hs || ''}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
       <td class="center">${item.unit || ''}</td>
@@ -2532,10 +2641,11 @@ function renderPackingPreview(companyBlock, companyName) {
     const h = parseFloat(item.h) || 0;
     const cbm = (l * w * h) / 1000000;
     totalQty += qty; totalNw += nw; totalGw += gw; totalCbm += cbm;
+    const imgHtml = item.img ? `<img src="${item.img}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
       <td>${item.cartonNo || ''}</td>
-      <td>${item.desc || ''}</td>
+      <td>${imgHtml}${item.desc || ''}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
       <td class="center">${item.unit || ''}</td>
       <td class="num">${fmtNum(nw, 2)}</td>
@@ -2747,7 +2857,7 @@ function importFromLibrary(docType) {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center';
   const modal = document.createElement('div');
-  modal.style.cssText = 'background:#fff;border-radius:10px;padding:20px;width:500px;max-height:60vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
+  modal.style.cssText = 'background:#fff;border-radius:10px;padding:20px;width:560px;max-height:60vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
   modal.innerHTML = `<div style="font-size:16px;font-weight:600;margin-bottom:14px">从产品库导入 <span style="font-size:12px;color:#888;font-weight:400">(勾选要导入的产品)</span></div>
     <div id="lib-modal-list"></div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
@@ -2762,8 +2872,10 @@ function importFromLibrary(docType) {
     if (!p.name) return;
     const item = document.createElement('div');
     item.className = 'product-lib-item';
+    const thumbHtml = p.img ? `<img class="img-thumb" src="${p.img}" style="width:32px;height:32px">` : `<div style="width:32px;height:32px;border:1px dashed #ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc">N/A</div>`;
     item.innerHTML = `
       <input type="checkbox" style="margin-right:8px">
+      ${thumbHtml}
       <div class="pl-name">${p.name}</div>
       <div class="pl-info">${p.spec||''} · ${p.price||''}</div>
     `;
@@ -2781,17 +2893,15 @@ function importFromLibrary(docType) {
       return;
     }
     // Add to current doc table
-    const tbody = document.getElementById(DOC_CONFIG[docType].tbody);
     selected.forEach(p => {
       const mapped = {};
       if (docType === 'proforma') {
-        mapped.desc = p.name; mapped.spec = p.spec; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
+        mapped.img = p.img; mapped.desc = p.name; mapped.spec = p.spec; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
       } else if (docType === 'commercial') {
-        mapped.desc = p.name; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
+        mapped.img = p.img; mapped.desc = p.name; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
       } else if (docType === 'packing') {
-        mapped.desc = p.name; mapped.qty = ''; mapped.unit = p.unit || 'PCS';
+        mapped.img = p.img; mapped.desc = p.name; mapped.qty = ''; mapped.unit = p.unit || 'PCS';
         mapped.nw = p.nw; mapped.gw = p.gw;
-        // Parse carton size
         if (p.l && p.w && p.h) { mapped.l = p.l; mapped.w = p.w; mapped.h = p.h; }
       }
       addRow(docType, mapped);
@@ -2805,8 +2915,16 @@ function addLibProduct(data) {
   const tbody = document.getElementById('lib-tbody');
   const tr = document.createElement('tr');
   const idx = tbody.children.length + 1;
+  const imgData = data ? (data.img || '') : '';
+  let imgCellHtml;
+  if (imgData) {
+    imgCellHtml = `<td class="img-cell"><img class="img-thumb" src="${imgData}" onclick="previewImage(this.src)" title="点击查看大图"></td>`;
+  } else {
+    imgCellHtml = `<td class="img-cell"><div class="img-upload-btn" onclick="uploadProductImage(this)" title="上传图片">📷</div></td>`;
+  }
   tr.innerHTML = `
     <td class="num-col">${idx}</td>
+    ${imgCellHtml}
     <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.name||''):''}"></td>
     <td class="td-input"><input type="text" placeholder="Spec" value="${data?(data.spec||''):''}"></td>
     <td class="td-input"><select><option value="">-</option><option ${data&&data.unit==='PCS'?'selected':''}>PCS</option><option ${data&&data.unit==='SET'?'selected':''}>SET</option><option ${data&&data.unit==='BOX'?'selected':''}>BOX</option><option ${data&&data.unit==='CTN'?'selected':''}>CTN</option><option ${data&&data.unit==='PAIR'?'selected':''}>PAIR</option><option ${data&&data.unit==='ROLL'?'selected':''}>ROLL</option><option ${data&&data.unit==='KG'?'selected':''}>KG</option></select></td>
@@ -2816,6 +2934,7 @@ function addLibProduct(data) {
     <td class="td-input"><input type="text" placeholder="L×W×H" class="mono" style="text-align:right" value="${data?(data.l&&data.w&&data.h?data.l+'×'+data.w+'×'+data.h:''):''}"></td>
     <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
   `;
+  tr._imgData = imgData;
   tr.querySelectorAll('input,select').forEach(inp => {
     inp.addEventListener('input', debouncedSave);
   });
@@ -2927,6 +3046,106 @@ function clearAllData() {
     showToast('数据已清空，即将刷新...');
     setTimeout(() => location.reload(), 800);
   }
+}
+
+// ==================== IMAGE UPLOAD & PREVIEW ====================
+function uploadProductImage(btn) {
+  const tr = btn.closest('tr');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  fileInput.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('图片不能超过2MB，请压缩后再上传');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const imgData = ev.target.result;
+      // Compress image to max 400px width
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const maxW = 400;
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = h * maxW / w; w = maxW; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        tr._imgData = compressed;
+        const cell = btn.parentElement;
+        cell.innerHTML = `<img class="img-thumb" src="${compressed}" onclick="previewImage(this.src)" title="点击查看大图">`;
+        debouncedSave();
+      };
+      img.src = imgData;
+    };
+    reader.readAsDataURL(file);
+  };
+  document.body.appendChild(fileInput);
+  fileInput.click();
+  document.body.removeChild(fileInput);
+}
+
+function previewImage(src) {
+  const overlay = document.createElement('div');
+  overlay.className = 'img-preview-overlay';
+  overlay.innerHTML = `<img src="${src}">`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
+
+// ==================== SAVE ROW TO LIBRARY ====================
+function saveRowToLibrary(btn, docType) {
+  const tr = btn.closest('tr');
+  const cfg = DOC_CONFIG[docType];
+  if (!cfg) return;
+  const inputs = tr.querySelectorAll('input:not([type=file]), select, textarea');
+  const imgEl = tr.querySelector('.img-thumb');
+  const imgData = imgEl ? imgEl.src : '';
+
+  let productName = '';
+  let inputIdx = 0;
+  const fieldMap = cfg.fieldMap || {};
+  const rowData = { img: imgData };
+
+  cfg.fields.forEach(f => {
+    if (f.type === 'image') return;
+    const val = inputs[inputIdx] ? inputs[inputIdx].value : '';
+    rowData[f.name] = val;
+    if (f.name === 'desc' || f.name === 'cartonNo') {
+      if (!productName) productName = val;
+    }
+    inputIdx++;
+  });
+
+  // Map to library fields
+  const libProduct = {
+    img: imgData,
+    name: rowData.desc || rowData.cartonNo || '',
+    spec: rowData.spec || '',
+    unit: rowData.unit || 'PCS',
+    price: rowData.price || '',
+    nw: rowData.nw || '',
+    gw: rowData.gw || '',
+    l: rowData.l || '',
+    w: rowData.w || '',
+    h: rowData.h || ''
+  };
+
+  if (!libProduct.name) {
+    alert('请先填写品名后再保存到产品库');
+    return;
+  }
+
+  // Add to library table
+  addLibProduct(libProduct);
+  // Also save to data
+  collectPageData('library');
+  saveCurrentPage();
+  showToast('已保存到产品库: ' + libProduct.name);
 }
 
 // ==================== TOAST ====================
