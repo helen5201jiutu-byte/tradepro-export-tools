@@ -3412,10 +3412,10 @@ function renderProformaPreview(companyBlock, companyName) {
       </div>
       ${pi.bank ? `<div class="doc-footer" style="margin-top:0"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
       <div class="doc-signature">
-        ${(() => { var ss = getStampSigHtml('proforma'); return `
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
       </div>
+      ${(() => { var ss = getStampSigHtml('proforma'); return ss.stampImg + ss.sigImg; })()}
     </div>`;
 }
 
@@ -3490,10 +3490,10 @@ function renderCommercialPreview(companyBlock, companyName) {
       ${ci.declaration ? `<div style="margin-top:16px;font-size:11px;font-style:italic;color:#555">${ci.declaration}</div>` : ''}
       ${ci.remarks ? `<div style="margin-top:8px;font-size:11px"><strong>Remarks:</strong> ${ci.remarks.replace(/\n/g,'<br>')}</div>` : ''}
       <div class="doc-signature">
-        ${(() => { var ss = getStampSigHtml('commercial'); return `
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
       </div>
+      ${(() => { var ss = getStampSigHtml('commercial'); return ss.stampImg + ss.sigImg; })()}
     </div>`;
 }
 
@@ -3581,10 +3581,10 @@ function renderPackingPreview(companyBlock, companyName) {
         <div style="text-align:center;border:1px solid var(--gold-light);background:#fdf8e8;padding:10px;border-radius:4px"><div style="font-size:10px;color:var(--gold-dim)">Total CBM</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono);color:var(--gold-dim)">${fmtNum(totalCbm, 3)}</div></div>
       </div>
       <div class="doc-signature">
-        ${(() => { var ss = getStampSigHtml('packing'); return `
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
       </div>
+      ${(() => { var ss = getStampSigHtml('packing'); return ss.stampImg + ss.sigImg; })()}
     </div>`;
 }
 
@@ -3679,10 +3679,10 @@ function renderSpecPreview(companyBlock, companyName) {
         </tbody>
       </table>
       <div class="doc-signature">
-        ${(() => { var ss = getStampSigHtml('spec'); return `
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Prepared By</div></div>
-        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Prepared By</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
       </div>
+      ${(() => { var ss = getStampSigHtml('spec'); return ss.stampImg + ss.sigImg; })()}
     </div>`;
 }
 
@@ -3947,16 +3947,30 @@ var DOC_STAMP_SIG = {
 };
 
 // Default positions (relative to .doc-paper, in px within the A4 preview)
-var STAMP_DEFAULT = { x: 400, y: 620, w: 120, h: 120 };
-var SIG_DEFAULT   = { x: 150, y: 640, w: 100, h: 50 };
+// A4 @96dpi ≈ 794×1123px, content area after 18mm/16mm padding ≈ 667×1035px
+// Real-world stamp ≈ 40mm diameter → 40/25.4*96 ≈ 151px
+// Real-world signature ≈ 30mm×15mm → 30/25.4*96 ≈ 113px × 57px
+// Stamp at bottom-right, overlapping the signature line (half on text)
+var STAMP_DEFAULT = { x: 480, y: 970, w: 151, h: 151 };
+var SIG_DEFAULT   = { x: 80, y: 985, w: 113, h: 57 };
 
 function getStampPos(docType) {
   var s = DOC_STAMP_SIG[docType];
-  return s.stampPos || Object.assign({}, STAMP_DEFAULT);
+  if (s.stampPos) {
+    // Invalidate stale positions from old .line-relative coordinate system
+    // (old coords were relative to 180px .line; new coords relative to .doc-paper ~794px)
+    if (s.stampPos.x < 200 && s.stampPos.y < 700) return Object.assign({}, STAMP_DEFAULT);
+    return s.stampPos;
+  }
+  return Object.assign({}, STAMP_DEFAULT);
 }
 function getSigPos(docType) {
   var s = DOC_STAMP_SIG[docType];
-  return s.sigPos || Object.assign({}, SIG_DEFAULT);
+  if (s.sigPos) {
+    if (s.sigPos.x < 50 && s.sigPos.y < 700) return Object.assign({}, SIG_DEFAULT);
+    return s.sigPos;
+  }
+  return Object.assign({}, SIG_DEFAULT);
 }
 function saveStampSigPositions() {
   if (!App.data.stampSig) App.data.stampSig = {};
@@ -4058,7 +4072,7 @@ function bindSealInteractions(docType) {
       e.preventDefault();
       var startX = e.clientX, startY = e.clientY;
       var origLeft = parseInt(el.style.left), origTop = parseInt(el.style.top);
-      var paperEl = el.parentElement;
+      var paperEl = el.closest('.doc-paper');
       var maxW = paperEl.clientWidth - el.offsetWidth;
       var maxH = paperEl.clientHeight - el.offsetHeight;
 
@@ -4089,7 +4103,7 @@ function bindSealInteractions(docType) {
       var touch = e.touches[0];
       var startX = touch.clientX, startY = touch.clientY;
       var origLeft = parseInt(el.style.left), origTop = parseInt(el.style.top);
-      var paperEl = el.parentElement;
+      var paperEl = el.closest('.doc-paper');
       var maxW = paperEl.clientWidth - el.offsetWidth;
       var maxH = paperEl.clientHeight - el.offsetHeight;
 
