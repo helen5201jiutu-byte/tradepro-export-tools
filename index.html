@@ -1756,7 +1756,7 @@ body {
       </div>
     </div>
     <div class="card-body" style="padding:0">
-      <div id="ct-3d-container" style="width:100%;height:520px;background:radial-gradient(ellipse at center,#1a2030 0%,#0a0e15 100%);border-radius:0 0 var(--radius) var(--radius);position:relative;overflow:hidden"></div>
+      <div id="ct-3d-container" style="width:100%;height:560px;background:linear-gradient(180deg,#1c2333 0%,#0e1320 60%,#080b12 100%);border-radius:0 0 var(--radius) var(--radius);position:relative;overflow:hidden"></div>
     </div>
   </div>
 </div>
@@ -2593,26 +2593,30 @@ const CARGO_COLORS = [
   0x1abc9c, 0xe67e22, 0x3498db, 0x2ecc71, 0xe74c3c
 ];
 
+// Color constants for 3 annotation types
+var CLR_CONTAINER = { hex: 0xd4a843, css: '#d4a843' };  // gold - container dims
+var CLR_PACKAGE   = { hex: 0x5bc0de, css: '#5bc0de' };  // cyan - package dims
+var CLR_GAP       = { hex: 0xe89055, css: '#e89055' };  // orange - gap dims
+
 // ---- helper: create text sprite for dimension labels ----
 function makeTextSprite(text, opts) {
   opts = opts || {};
-  var fontSize = opts.fontSize || 48;
-  var fontColor = opts.fontColor || '#4ec9b0';
-  var bgColor = opts.bgColor || 'rgba(15,20,30,0.85)';
+  var fontSize = opts.fontSize || 56;
+  var fontColor = opts.fontColor || '#5bc0de';
+  var bgColor = opts.bgColor || 'rgba(12,16,24,0.92)';
   var bold = opts.bold !== false;
   var cv = document.createElement('canvas');
   var ctx = cv.getContext('2d');
   ctx.font = (bold ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
   var metrics = ctx.measureText(text);
-  var tw = Math.ceil(metrics.width) + 24;
-  var th = fontSize + 16;
+  var tw = Math.ceil(metrics.width) + 28;
+  var th = fontSize + 20;
   cv.width = tw; cv.height = th;
-  // re-set font after resize
   ctx.font = (bold ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
-  // bg
+  // bg rounded rect
   ctx.fillStyle = bgColor;
+  var r = 8;
   ctx.beginPath();
-  var r = 6;
   ctx.moveTo(r, 0); ctx.lineTo(tw - r, 0); ctx.quadraticCurveTo(tw, 0, tw, r);
   ctx.lineTo(tw, th - r); ctx.quadraticCurveTo(tw, th, tw - r, th);
   ctx.lineTo(r, th); ctx.quadraticCurveTo(0, th, 0, th - r);
@@ -2629,28 +2633,40 @@ function makeTextSprite(text, opts) {
   ctx.fillText(text, tw / 2, th / 2);
   var tex = new THREE.CanvasTexture(cv);
   tex.needsUpdate = true;
-  var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
-  sprite.scale.set(tw * 0.012, th * 0.012, 1);
+  var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
+  // Store original canvas aspect ratio for fixed-size scaling
+  sprite.userData.baseScaleW = tw;
+  sprite.userData.baseScaleH = th;
+  sprite.userData.isDimLabel = true;
   return sprite;
 }
 
-// ---- helper: create dimension annotation line with arrows ----
-function makeDimensionLine(start, end, color) {
-  color = color || 0x4ec9b0;
+// ---- helper: create a solid (non-dashed) dimension line ----
+function makeDimLine(start, end, color, opacity) {
+  color = color || 0x5bc0de;
+  opacity = opacity !== undefined ? opacity : 0.85;
   var geo = new THREE.BufferGeometry().setFromPoints([start, end]);
-  var mat = new THREE.LineDashedMaterial({ color: color, dashSize: 0.15, gapSize: 0.08, transparent: true, opacity: 0.8 });
+  var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
+  return new THREE.Line(geo, mat);
+}
+
+// ---- helper: create extension line (thinner, semi-transparent) ----
+function makeExtLine(start, end, color) {
+  color = color || 0x5bc0de;
+  var geo = new THREE.BufferGeometry().setFromPoints([start, end]);
+  var mat = new THREE.LineDashedMaterial({ color: color, dashSize: 0.08, gapSize: 0.06, transparent: true, opacity: 0.5 });
   var line = new THREE.Line(geo, mat);
   line.computeLineDistances();
   return line;
 }
 
-// ---- helper: create arrow tick marks at line endpoints ----
-function makeTickMark(pos, dir, size, color) {
-  color = color || 0x4ec9b0;
-  size = size || 0.12;
+// ---- helper: create small endpoint tick perpendicular to line direction ----
+function makeEndpointTick(pos, perpDir, size, color) {
+  color = color || 0x5bc0de;
+  size = size || 0.1;
   var geo = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(pos.x - dir.x * size, pos.y - dir.y * size, pos.z - dir.z * size),
-    new THREE.Vector3(pos.x + dir.x * size, pos.y + dir.y * size, pos.z + dir.z * size)
+    new THREE.Vector3(pos.x - perpDir.x * size, pos.y - perpDir.y * size, pos.z - perpDir.z * size),
+    new THREE.Vector3(pos.x + perpDir.x * size, pos.y + perpDir.y * size, pos.z + perpDir.z * size)
   ]);
   return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.8 }));
 }
@@ -2667,17 +2683,13 @@ function renderContainer3D(container, details) {
   while (container3D.firstChild) container3D.removeChild(container3D.firstChild);
 
   var hintEl = document.createElement('div');
-  hintEl.style.cssText = 'position:absolute;top:12px;left:12px;color:rgba(255,255,255,0.6);font-size:12px;pointer-events:none;z-index:5';
+  hintEl.style.cssText = 'position:absolute;top:14px;left:14px;color:rgba(255,255,255,0.55);font-size:12px;pointer-events:none;z-index:5;letter-spacing:0.5px';
   hintEl.textContent = '初始化 3D 场景…';
   container3D.appendChild(hintEl);
 
   var infoEl = document.createElement('div');
-  infoEl.style.cssText = 'position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.45);font-size:11px;pointer-events:none;z-index:5;font-family:monospace;white-space:pre-line';
+  infoEl.style.cssText = 'position:absolute;bottom:14px;left:14px;color:rgba(255,255,255,0.4);font-size:11px;pointer-events:none;z-index:5;font-family:monospace;white-space:pre-line;letter-spacing:0.3px';
   container3D.appendChild(infoEl);
-
-  var controlsEl = document.createElement('div');
-  controlsEl.style.cssText = 'position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:5';
-  container3D.appendChild(controlsEl);
 
   // Wait for THREE to be ready
   var waitAttempts = 0;
@@ -2698,7 +2710,7 @@ function renderContainer3D(container, details) {
   function doRender() {
     try {
       var clientWidth = container3D.clientWidth || (container3D.parentElement && container3D.parentElement.clientWidth) || 640;
-      var clientHeight = container3D.clientHeight || 520;
+      var clientHeight = container3D.clientHeight || 560;
       if (clientWidth < 2 || clientHeight < 2) throw new Error('容器尺寸无效: ' + clientWidth + 'x' + clientHeight);
 
       hintEl.textContent = '渲染中…';
@@ -2706,6 +2718,7 @@ function renderContainer3D(container, details) {
       var SCALE = 0.01;
       var cL = container.L * SCALE, cW = container.W * SCALE, cH = container.H * SCALE;
       var maxDim = Math.max(cL, cW, cH);
+      // Container occupies from (offset.x, 0, offset.z) to (offset.x+cL, cH, offset.z+cW)
       var offset = new THREE.Vector3(-cL / 2, 0, -cW / 2);
 
       // Scene
@@ -2713,52 +2726,85 @@ function renderContainer3D(container, details) {
       scene.background = new THREE.Color(0x0a0e15);
 
       // Camera
-      var camera = new THREE.PerspectiveCamera(42, clientWidth / clientHeight, 0.1, 200);
-      camera.position.set(maxDim * 2.2, maxDim * 1.6, maxDim * 2.8);
+      var camera = new THREE.PerspectiveCamera(40, clientWidth / clientHeight, 0.1, 200);
+      camera.position.set(maxDim * 2.4, maxDim * 1.7, maxDim * 3.0);
       camera.lookAt(0, cH / 2, 0);
 
-      // Renderer
+      // Renderer with higher quality
       var renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(clientWidth, clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       container3D.appendChild(renderer.domElement);
 
-      // Lights
-      scene.add(new THREE.AmbientLight(0x667788, 0.9));
-      var d1 = new THREE.DirectionalLight(0xffffff, 0.65);
-      d1.position.set(maxDim * 2, maxDim * 3, maxDim * 2);
-      scene.add(d1);
-      var d2 = new THREE.DirectionalLight(0xaabbcc, 0.35);
-      d2.position.set(-maxDim * 2, maxDim, -maxDim * 2);
-      scene.add(d2);
+      // ====== Realistic Lighting ======
+      // Hemisphere light for natural ambient
+      var hemi = new THREE.HemisphereLight(0xb0c4de, 0x2a2a35, 0.55);
+      scene.add(hemi);
+      // Key directional light
+      var keyLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      keyLight.position.set(maxDim * 2, maxDim * 3, maxDim * 1.5);
+      scene.add(keyLight);
+      // Fill light from opposite side
+      var fillLight = new THREE.DirectionalLight(0x8899bb, 0.3);
+      fillLight.position.set(-maxDim * 1.5, maxDim * 1.2, -maxDim * 1.5);
+      scene.add(fillLight);
+      // Rim light from behind
+      var rimLight = new THREE.DirectionalLight(0xffeecc, 0.2);
+      rimLight.position.set(0, maxDim * 0.8, -maxDim * 2);
+      scene.add(rimLight);
 
-      // Grid (subtle)
-      var grid = new THREE.GridHelper(maxDim * 4, 40, 0x222a3a, 0x161b26);
+      // ====== Ground & Grid ======
+      var grid = new THREE.GridHelper(maxDim * 5, 50, 0x1e2433, 0x141923);
+      grid.position.y = -0.01;
       scene.add(grid);
 
-      // Container wireframe (golden)
-      var edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(cL, cH, cW));
-      var wire = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.85 }));
+      // Ground plane (subtle reflective look)
+      var groundMat = new THREE.MeshStandardMaterial({ color: 0x0d1119, roughness: 0.85, metalness: 0.15 });
+      var ground = new THREE.Mesh(new THREE.PlaneGeometry(maxDim * 5, maxDim * 5), groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.02;
+      scene.add(ground);
+
+      // ====== Container (semi-transparent walls + golden edges) ======
+      // Container corner vertices
+      var cx0 = offset.x, cx1 = offset.x + cL;
+      var cy0 = 0, cy1 = cH;
+      var cz0 = offset.z, cz1 = offset.z + cW;
+
+      // Golden wireframe edges
+      var boxGeo = new THREE.BoxGeometry(cL, cH, cW);
+      var edges = new THREE.EdgesGeometry(boxGeo);
+      var wire = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.7 }));
       wire.position.set(offset.x + cL / 2, cH / 2, offset.z + cW / 2);
       scene.add(wire);
 
-      // Floor plane
-      var floor = new THREE.Mesh(
+      // Semi-transparent container walls (back + left + floor for depth perception)
+      var wallMat = new THREE.MeshStandardMaterial({ color: 0x2a3040, transparent: true, opacity: 0.12, roughness: 0.6, side: THREE.DoubleSide });
+      // Back wall (Z = cz1)
+      var backWall = new THREE.Mesh(new THREE.PlaneGeometry(cL, cH), wallMat);
+      backWall.position.set(offset.x + cL / 2, cH / 2, cz1);
+      scene.add(backWall);
+      // Left wall (X = cx0)
+      var leftWall = new THREE.Mesh(new THREE.PlaneGeometry(cW, cH), wallMat);
+      leftWall.position.set(cx0, cH / 2, offset.z + cW / 2);
+      leftWall.rotation.y = Math.PI / 2;
+      scene.add(leftWall);
+      // Floor inside container
+      var containerFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(cL, cW),
-        new THREE.MeshBasicMaterial({ color: 0x111620, transparent: true, opacity: 0.4, side: THREE.DoubleSide })
+        new THREE.MeshStandardMaterial({ color: 0x1a1f2e, roughness: 0.7, metalness: 0.2 })
       );
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.set(offset.x + cL / 2, 0.01, offset.z + cW / 2);
-      scene.add(floor);
+      containerFloor.rotation.x = -Math.PI / 2;
+      containerFloor.position.set(offset.x + cL / 2, 0.005, offset.z + cW / 2);
+      scene.add(containerFloor);
 
-      // Cargo boxes
+      // ====== Cargo Boxes ======
       legendEl.innerHTML = '';
-      var labelGroup = new THREE.Group();      // for dimension labels
-      var gapGroup = new THREE.Group();         // for gap annotations
+      var labelGroup = new THREE.Group();
+      var gapGroup = new THREE.Group();
       scene.add(labelGroup);
       scene.add(gapGroup);
 
-      // Track first cargo's first box position for annotation
       var firstBoxData = null;
 
       details.forEach(function(d, idx) {
@@ -2768,8 +2814,13 @@ function renderContainer3D(container, details) {
         var parts = d.arrangementParts;
         var rows = parts[0] || 1, cols = parts[1] || 1, layers = parts[2] || 1;
         var placedCount = Math.min(d.count, rows * cols * layers);
-        var boxMat = new THREE.MeshLambertMaterial({ color: color, transparent: true, opacity: 0.88 });
-        var edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+
+        // Realistic cargo material
+        var boxMat = new THREE.MeshStandardMaterial({
+          color: color, roughness: 0.65, metalness: 0.1,
+          transparent: true, opacity: 0.92
+        });
+        var edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 });
 
         for (var layer = 0; layer < layers; layer++) {
           for (var row = 0; row < rows; row++) {
@@ -2786,7 +2837,6 @@ function renderContainer3D(container, details) {
               be.position.copy(box.position);
               scene.add(be);
 
-              // Save first box of first cargo type for annotation
               if (idx === 0 && layer === 0 && row === 0 && col === 0) {
                 firstBoxData = { x: x, y: y, z: z, bl: bl, bw: bw, bh: bh, origL: d.origL || d.boxL, origW: d.origW || d.boxW, origH: d.origH || d.boxH };
               }
@@ -2794,7 +2844,6 @@ function renderContainer3D(container, details) {
           }
         }
 
-        // Legend
         var li = document.createElement('div');
         li.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)';
         var hex = color.toString(16); while (hex.length < 6) hex = '0' + hex;
@@ -2803,128 +2852,159 @@ function renderContainer3D(container, details) {
       });
 
       // ====== DIMENSION ANNOTATIONS ======
-      var LABEL_COLOR = '#4ec9b0';
-      var LABEL_HEX = 0x4ec9b0;
-      var GAP_COLOR = '#f0a050';
-      var GAP_HEX = 0xf0a050;
-      var CONTAINER_COLOR = '#c9a227';
-      var CONTAINER_HEX = 0xc9a227;
+      // Extension offset distance from container edge
+      var EXT = 0.35;  // how far annotation lines extend from container corners
+      var allSprites = []; // collect for fixed-size scaling
 
-      // --- 1. Container dimensions (3 edges: length, width, height) ---
-      // Length (X axis) - front bottom edge
-      var cLenStart = new THREE.Vector3(offset.x, -0.02, offset.z + cW + 0.3);
-      var cLenEnd = new THREE.Vector3(offset.x + cL, -0.02, offset.z + cW + 0.3);
-      labelGroup.add(makeDimensionLine(cLenStart, cLenEnd, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cLenStart, new THREE.Vector3(0, 1, 0), 0.1, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cLenEnd, new THREE.Vector3(0, 1, 0), 0.1, CONTAINER_HEX));
-      var cLenLabel = makeTextSprite('L: ' + container.L + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
-      cLenLabel.position.set(offset.x + cL / 2, -0.02, offset.z + cW + 0.55);
-      labelGroup.add(cLenLabel);
+      // Helper to register sprite for dynamic scaling
+      function regSprite(s) { allSprites.push(s); return s; }
 
-      // Width (Z axis) - right bottom edge
-      var cWidStart = new THREE.Vector3(offset.x + cL + 0.3, -0.02, offset.z);
-      var cWidEnd = new THREE.Vector3(offset.x + cL + 0.3, -0.02, offset.z + cW);
-      labelGroup.add(makeDimensionLine(cWidStart, cWidEnd, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cWidStart, new THREE.Vector3(1, 0, 0), 0.1, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cWidEnd, new THREE.Vector3(1, 0, 0), 0.1, CONTAINER_HEX));
-      var cWidLabel = makeTextSprite('W: ' + container.W + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
-      cWidLabel.position.set(offset.x + cL + 0.55, -0.02, offset.z + cW / 2);
-      labelGroup.add(cWidLabel);
+      // ====== 1. Container Dimensions (gold, along container edges) ======
+      // L (X-axis): along front-bottom-left to front-bottom-right corner
+      // Extension lines from container corners going outward in -Z
+      var cL_s = new THREE.Vector3(cx0, 0, cz0 - EXT);
+      var cL_e = new THREE.Vector3(cx1, 0, cz0 - EXT);
+      labelGroup.add(makeDimLine(cL_s, cL_e, CLR_CONTAINER.hex, 0.8));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz0), cL_s, CLR_CONTAINER.hex));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), cL_e, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cL_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cL_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
+      var sCL = regSprite(makeTextSprite('L: ' + container.L + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
+      sCL.position.set((cx0 + cx1) / 2, 0, cz0 - EXT - 0.25);
+      labelGroup.add(sCL);
 
-      // Height (Y axis) - back left edge
-      var cHeiStart = new THREE.Vector3(offset.x - 0.3, 0, offset.z + cW);
-      var cHeiEnd = new THREE.Vector3(offset.x - 0.3, cH, offset.z + cW);
-      labelGroup.add(makeDimensionLine(cHeiStart, cHeiEnd, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cHeiStart, new THREE.Vector3(0, 0, 1), 0.1, CONTAINER_HEX));
-      labelGroup.add(makeTickMark(cHeiEnd, new THREE.Vector3(0, 0, 1), 0.1, CONTAINER_HEX));
-      var cHeiLabel = makeTextSprite('H: ' + container.H + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
-      cHeiLabel.position.set(offset.x - 0.6, cH / 2, offset.z + cW);
-      labelGroup.add(cHeiLabel);
+      // W (Z-axis): along right-bottom edge, extension in +X
+      var cW_s = new THREE.Vector3(cx1 + EXT, 0, cz0);
+      var cW_e = new THREE.Vector3(cx1 + EXT, 0, cz1);
+      labelGroup.add(makeDimLine(cW_s, cW_e, CLR_CONTAINER.hex, 0.8));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), cW_s, CLR_CONTAINER.hex));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz1), cW_e, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cW_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cW_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
+      var sCW = regSprite(makeTextSprite('W: ' + container.W + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
+      sCW.position.set(cx1 + EXT + 0.25, 0, (cz0 + cz1) / 2);
+      labelGroup.add(sCW);
 
-      // --- 2. Single package dimensions (annotate first cargo's first box) ---
+      // H (Y-axis): along back-left edge, extension in -X
+      var cH_s = new THREE.Vector3(cx0 - EXT, 0, cz1);
+      var cH_e = new THREE.Vector3(cx0 - EXT, cH, cz1);
+      labelGroup.add(makeDimLine(cH_s, cH_e, CLR_CONTAINER.hex, 0.8));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), cH_s, CLR_CONTAINER.hex));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), cH_e, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cH_s, new THREE.Vector3(0, 0, 1), 0.08, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cH_e, new THREE.Vector3(0, 0, 1), 0.08, CLR_CONTAINER.hex));
+      var sCH = regSprite(makeTextSprite('H: ' + container.H + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
+      sCH.position.set(cx0 - EXT - 0.25, cH / 2, cz1);
+      labelGroup.add(sCH);
+
+      // ====== 2. Package Dimensions (cyan, annotate first box) ======
       if (firstBoxData) {
         var fb = firstBoxData;
-        // Package Length (X) - front face, slightly offset in -Z
-        var pLenStart = new THREE.Vector3(fb.x - fb.bl / 2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
-        var pLenEnd = new THREE.Vector3(fb.x + fb.bl / 2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
-        labelGroup.add(makeDimensionLine(pLenStart, pLenEnd, LABEL_HEX));
-        var pLenLabel = makeTextSprite(fb.origL + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
-        pLenLabel.position.set(fb.x, fb.y - fb.bh / 2 - 0.15, fb.z - fb.bw / 2 - 0.35);
-        labelGroup.add(pLenLabel);
+        var fbx0 = fb.x - fb.bl / 2, fbx1 = fb.x + fb.bl / 2;
+        var fby0 = fb.y - fb.bh / 2, fby1 = fb.y + fb.bh / 2;
+        var fbz0 = fb.z - fb.bw / 2, fbz1 = fb.z + fb.bw / 2;
+        var pEXT = 0.15;
 
-        // Package Width (Z) - right face
-        var pWidStart = new THREE.Vector3(fb.x + fb.bl / 2 + 0.2, fb.y - fb.bh / 2, fb.z - fb.bw / 2);
-        var pWidEnd = new THREE.Vector3(fb.x + fb.bl / 2 + 0.2, fb.y - fb.bh / 2, fb.z + fb.bw / 2);
-        labelGroup.add(makeDimensionLine(pWidStart, pWidEnd, LABEL_HEX));
-        var pWidLabel = makeTextSprite(fb.origW + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
-        pWidLabel.position.set(fb.x + fb.bl / 2 + 0.38, fb.y - fb.bh / 2 - 0.15, fb.z);
-        labelGroup.add(pWidLabel);
+        // Package L (X-axis): extension in -Z from front face
+        var pL_s = new THREE.Vector3(fbx0, fby0, fbz0 - pEXT);
+        var pL_e = new THREE.Vector3(fbx1, fby0, fbz0 - pEXT);
+        labelGroup.add(makeDimLine(pL_s, pL_e, CLR_PACKAGE.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz0), pL_s, CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), pL_e, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pL_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pL_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
+        var sPL = regSprite(makeTextSprite(fb.origL + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
+        sPL.position.set(fb.x, fby0 - 0.12, fbz0 - pEXT - 0.18);
+        labelGroup.add(sPL);
 
-        // Package Height (Y) - front left corner
-        var pHeiStart = new THREE.Vector3(fb.x - fb.bl / 2 - 0.2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
-        var pHeiEnd = new THREE.Vector3(fb.x - fb.bl / 2 - 0.2, fb.y + fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
-        labelGroup.add(makeDimensionLine(pHeiStart, pHeiEnd, LABEL_HEX));
-        var pHeiLabel = makeTextSprite(fb.origH + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
-        pHeiLabel.position.set(fb.x - fb.bl / 2 - 0.4, fb.y, fb.z - fb.bw / 2 - 0.35);
-        labelGroup.add(pHeiLabel);
+        // Package W (Z-axis): extension in +X from right face
+        var pW_s = new THREE.Vector3(fbx1 + pEXT, fby0, fbz0);
+        var pW_e = new THREE.Vector3(fbx1 + pEXT, fby0, fbz1);
+        labelGroup.add(makeDimLine(pW_s, pW_e, CLR_PACKAGE.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), pW_s, CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz1), pW_e, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pW_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pW_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
+        var sPW = regSprite(makeTextSprite(fb.origW + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
+        sPW.position.set(fbx1 + pEXT + 0.18, fby0 - 0.12, fb.z);
+        labelGroup.add(sPW);
+
+        // Package H (Y-axis): extension in -X from left face
+        var pH_s = new THREE.Vector3(fbx0 - pEXT, fby0, fbz0);
+        var pH_e = new THREE.Vector3(fbx0 - pEXT, fby1, fbz0);
+        labelGroup.add(makeDimLine(pH_s, pH_e, CLR_PACKAGE.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz0), pH_s, CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby1, fbz0), pH_e, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pH_s, new THREE.Vector3(0, 0, 1), 0.05, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pH_e, new THREE.Vector3(0, 0, 1), 0.05, CLR_PACKAGE.hex));
+        var sPH = regSprite(makeTextSprite(fb.origH + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
+        sPH.position.set(fbx0 - pEXT - 0.18, fb.y, fbz0 - 0.12);
+        labelGroup.add(sPH);
       }
 
-      // --- 3. Gap annotations (cargo edge to container wall) ---
+      // ====== 3. Gap Annotations (orange, cargo edge to container wall) ======
       if (details.length > 0 && details[0].arrangementParts) {
         var d0 = details[0];
         var bl0 = d0.boxL * SCALE, bw0 = d0.boxW * SCALE, bh0 = d0.boxH * SCALE;
         var parts0 = d0.arrangementParts;
         var rows0 = parts0[0] || 1, cols0 = parts0[1] || 1, layers0 = parts0[2] || 1;
+        var gEXT = 0.3;
 
-        // X gap (cargo stack right edge to container right wall)
-        var cargoRightEdge = offset.x + rows0 * bl0;
-        var xGap = cL - rows0 * bl0;
-        if (xGap > 0.001) {
-          var xGapStart = new THREE.Vector3(cargoRightEdge, cH + 0.3, offset.z + cW / 2);
-          var xGapEnd = new THREE.Vector3(offset.x + cL, cH + 0.3, offset.z + cW / 2);
-          gapGroup.add(makeDimensionLine(xGapStart, xGapEnd, GAP_HEX));
-          gapGroup.add(makeTickMark(xGapStart, new THREE.Vector3(0, 1, 0), 0.08, GAP_HEX));
-          gapGroup.add(makeTickMark(xGapEnd, new THREE.Vector3(0, 1, 0), 0.08, GAP_HEX));
-          var xGapLabel = makeTextSprite('ΔX: ' + Math.round(xGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
-          xGapLabel.position.set((cargoRightEdge + offset.x + cL) / 2, cH + 0.5, offset.z + cW / 2);
-          gapGroup.add(xGapLabel);
+        // X gap: cargo right edge to container right wall
+        var cargoRightX = offset.x + rows0 * bl0;
+        var xGapMm = Math.round(container.L - rows0 * d0.boxL);
+        if (xGapMm > 0) {
+          var xg_s = new THREE.Vector3(cargoRightX, cH + gEXT, cz0);
+          var xg_e = new THREE.Vector3(cx1, cH + gEXT, cz0);
+          gapGroup.add(makeDimLine(xg_s, xg_e, CLR_GAP.hex, 0.85));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cargoRightX, cH, cz0), xg_s, CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz0), xg_e, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
+          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
+          sXG.position.set((cargoRightX + cx1) / 2, cH + gEXT + 0.22, cz0);
+          gapGroup.add(sXG);
         }
 
-        // Z gap (cargo back edge to container back wall)
-        var cargoBackEdge = offset.z + cols0 * bw0;
-        var zGap = cW - cols0 * bw0;
-        if (zGap > 0.001) {
-          var zGapStart = new THREE.Vector3(offset.x + cL / 2, cH + 0.3, cargoBackEdge);
-          var zGapEnd = new THREE.Vector3(offset.x + cL / 2, cH + 0.3, offset.z + cW);
-          gapGroup.add(makeDimensionLine(zGapStart, zGapEnd, GAP_HEX));
-          gapGroup.add(makeTickMark(zGapStart, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
-          gapGroup.add(makeTickMark(zGapEnd, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
-          var zGapLabel = makeTextSprite('ΔZ: ' + Math.round(zGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
-          zGapLabel.position.set(offset.x + cL / 2, cH + 0.5, (cargoBackEdge + offset.z + cW) / 2);
-          gapGroup.add(zGapLabel);
+        // Z gap: cargo back edge to container back wall
+        var cargoBackZ = offset.z + cols0 * bw0;
+        var zGapMm = Math.round(container.W - cols0 * d0.boxW);
+        if (zGapMm > 0) {
+          var zg_s = new THREE.Vector3(cx0, cH + gEXT, cargoBackZ);
+          var zg_e = new THREE.Vector3(cx0, cH + gEXT, cz1);
+          gapGroup.add(makeDimLine(zg_s, zg_e, CLR_GAP.hex, 0.85));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cargoBackZ), zg_s, CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), zg_e, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
+          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
+          sZG.position.set(cx0, cH + gEXT + 0.22, (cargoBackZ + cz1) / 2);
+          gapGroup.add(sZG);
         }
 
-        // Y gap (cargo top to container ceiling)
-        var cargoTopEdge = layers0 * bh0;
-        var yGap = cH - layers0 * bh0;
-        if (yGap > 0.001) {
-          var yGapStart = new THREE.Vector3(offset.x + cL + 0.3, cargoTopEdge, offset.z + cW / 2);
-          var yGapEnd = new THREE.Vector3(offset.x + cL + 0.3, cH, offset.z + cW / 2);
-          gapGroup.add(makeDimensionLine(yGapStart, yGapEnd, GAP_HEX));
-          gapGroup.add(makeTickMark(yGapStart, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
-          gapGroup.add(makeTickMark(yGapEnd, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
-          var yGapLabel = makeTextSprite('ΔY: ' + Math.round(yGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
-          yGapLabel.position.set(offset.x + cL + 0.55, (cargoTopEdge + cH) / 2, offset.z + cW / 2);
-          gapGroup.add(yGapLabel);
+        // Y gap: cargo top to container ceiling
+        var cargoTopY = layers0 * bh0;
+        var yGapMm = Math.round(container.H - layers0 * d0.boxH);
+        if (yGapMm > 0) {
+          var yg_s = new THREE.Vector3(cx1 + gEXT, cargoTopY, cz1);
+          var yg_e = new THREE.Vector3(cx1 + gEXT, cH, cz1);
+          gapGroup.add(makeDimLine(yg_s, yg_e, CLR_GAP.hex, 0.85));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cargoTopY, cz1), yg_s, CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz1), yg_e, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
+          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
+          sYG.position.set(cx1 + gEXT + 0.22, (cargoTopY + cH) / 2, cz1);
+          gapGroup.add(sYG);
         }
       }
 
-      // Info text
+      // ====== Info Text ======
       var totalBoxes = details.reduce(function(s, d) { return s + (d.count || 0); }, 0);
       infoEl.textContent = container.name + '  ' + container.L + '×' + container.W + '×' + container.H + 'mm  |  货物: ' + totalBoxes + '件';
       hintEl.textContent = '拖拽旋转 · 滚轮缩放 · 右键平移';
 
-      // ---- Toggle controls ----
+      // ====== Toggle Controls ======
       var showLabels = true, showGaps = true;
       var toggleLabels = document.getElementById('ct-3d-toggle-labels');
       var toggleGaps = document.getElementById('ct-3d-toggle-gaps');
@@ -2932,14 +3012,10 @@ function renderContainer3D(container, details) {
         labelGroup.visible = showLabels;
         gapGroup.visible = showGaps;
       }
-      if (toggleLabels) {
-        toggleLabels.onchange = function() { showLabels = this.checked; applyToggles(); };
-      }
-      if (toggleGaps) {
-        toggleGaps.onchange = function() { showGaps = this.checked; applyToggles(); };
-      }
+      if (toggleLabels) toggleLabels.onchange = function() { showLabels = this.checked; applyToggles(); };
+      if (toggleGaps) toggleGaps.onchange = function() { showGaps = this.checked; applyToggles(); };
 
-      // ---- Inline orbit controls ----
+      // ====== Inline Orbit Controls ======
       var isDragging = false, isPanning = false;
       var prevX = 0, prevY = 0;
       var target = { x: 0, y: cH / 2, z: 0 };
@@ -2999,18 +3075,44 @@ function renderContainer3D(container, details) {
       dom.addEventListener('wheel', onWheel, { passive: false });
       dom.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
-      // Animation loop
+      // ====== Animation Loop with Fixed-Size Label Scaling ======
+      // Target sprite on-screen height (in 3D world units at distance 1)
+      var TARGET_SCREEN_PX = 22;  // desired sprite height in screen pixels
       var animationId = null;
+
+      function updateSpriteSizes() {
+        // Calculate world-space size that corresponds to TARGET_SCREEN_PX at each sprite's distance from camera
+        var camDist = camera.position.distanceTo(target);
+        // visible height at distance = 2 * camDist * tan(fov/2)
+        var visibleHeight = 2 * camDist * Math.tan((camera.fov * Math.PI / 180) / 2);
+        var worldPerPx = visibleHeight / clientHeight;
+        var targetWorldH = TARGET_SCREEN_PX * worldPerPx;
+
+        for (var i = 0; i < allSprites.length; i++) {
+          var sp = allSprites[i];
+          if (!sp.visible) continue;
+          // Distance from camera to sprite
+          var d = camera.position.distanceTo(sp.position);
+          // Adjust for perspective: size proportional to distance
+          var ratio = d / camDist;
+          var worldH = targetWorldH * ratio;
+          var aspect = sp.userData.baseScaleW / sp.userData.baseScaleH;
+          var worldW = worldH * aspect;
+          sp.scale.set(worldW, worldH, 1);
+        }
+      }
+
       function animate() {
         animationId = requestAnimationFrame(animate);
+        updateSpriteSizes();
         renderer.render(scene, camera);
       }
       animate();
 
       // Resize handler
       function onResize() {
-        var w = container3D.clientWidth || 640, h = container3D.clientHeight || 520;
-        if (w > 1 && h > 1) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+        var w = container3D.clientWidth || 640, h = container3D.clientHeight || 560;
+        if (w > 1 && h > 1) { clientWidth = w; clientHeight = h; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
       }
       window.addEventListener('resize', onResize);
 
