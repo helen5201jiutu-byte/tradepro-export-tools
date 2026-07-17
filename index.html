@@ -1424,6 +1424,170 @@ body {
   /* —— Page margins: zero, because .doc-paper has its own padding —— */
   @page { margin: 0; }
 }
+
+/* ========== Login Gate ========== */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 30%, #1e2433 0%, #141821 50%, #0d1017 100%);
+}
+.login-overlay.hidden { display: none; }
+
+.login-card {
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background: linear-gradient(160deg, #1c2230 0%, #161a26 100%);
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  text-align: center;
+  position: relative;
+}
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 1px;
+}
+
+.login-logo {
+  width: 56px; height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #d4af37, #b89530);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: #141821;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+}
+.login-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.login-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  letter-spacing: 0.5px;
+}
+.login-input-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.login-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1.5px solid var(--border-dark);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+  font-size: 15px;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+.login-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(212,175,55,0.05);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+}
+.login-input::placeholder {
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  font-family: var(--font-body);
+}
+.login-input-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.login-btn {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #d4af37, #b89530);
+  color: #141821;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212,175,55,0.35);
+}
+.login-btn:active { transform: translateY(0); }
+
+.login-error {
+  color: #e76f51;
+  font-size: 12px;
+  margin-top: 12px;
+  min-height: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.login-error.show { opacity: 1; }
+
+.login-hint {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-dark);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.login-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.login-badge.admin {
+  background: rgba(212,175,55,0.12);
+  border: 1px solid rgba(212,175,55,0.3);
+  color: var(--gold);
+}
+.login-badge.guest {
+  background: rgba(42,157,143,0.12);
+  border: 1px solid rgba(42,157,143,0.3);
+  color: #5cb8a6;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 32px 24px 24px;
+  }
+  .login-title { font-size: 20px; }
+  .login-input { font-size: 16px; }
+}
 </style>
 <script>
 // Async multi-CDN loader for Three.js (China-friendly first)
@@ -1449,6 +1613,25 @@ body {
 </script>
 </head>
 <body>
+
+<!-- ============ LOGIN GATE ============ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">L</div>
+    <div class="login-title">Lab.tool</div>
+    <div class="login-subtitle">Export Tools · 外贸业务工具系统</div>
+    <div class="login-input-wrap">
+      <span class="login-input-icon">🔑</span>
+      <input class="login-input" id="loginCode" type="text" placeholder="请输入邀请码 / Invite Code" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">进 入 系 统</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-hint">
+      本系统为邀请制工具平台<br>
+      请输入邀请码以继续访问
+    </div>
+  </div>
+</div>
 
 <!-- ============ SIDEBAR ============ -->
 <aside class="sidebar">
@@ -1511,7 +1694,11 @@ body {
     </div>
   </nav>
   <div class="sidebar-footer">
-    Lab.tool v1.1 · 数据本地存储
+    <div id="userBadge"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+      Lab.tool v1.1 · 数据本地存储
+      <button onclick="logout()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;text-decoration:underline;padding:0">退出</button>
+    </div>
   </div>
 </aside>
 
@@ -2843,6 +3030,8 @@ function init() {
   autofillCompany();
   // Auto-save on input change
   document.addEventListener('input', () => debouncedSave());
+  // Show user role badge
+  renderUserBadge();
 }
 
 // ==================== NAVIGATION ====================
@@ -6441,8 +6630,89 @@ function loadIncotermData() {
   calcIncoterm();
 }
 
+// ==================== LOGIN GATE ====================
+const INVITE_CODES = {
+  '*123':     { role: 'admin', label: '管理员' },
+  'qwerty123': { role: 'guest', label: '访客' }
+};
+const SESSION_KEY = 'tradepro_session';
+
+function checkSession() {
+  const saved = localStorage.getItem(SESSION_KEY);
+  if (!saved) return null;
+  try {
+    const session = JSON.parse(saved);
+    // Verify the code is still valid
+    if (INVITE_CODES[session.code]) {
+      return session;
+    }
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  } catch(e) {
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  }
+}
+
+function doLogin() {
+  const input = document.getElementById('loginCode');
+  const errEl = document.getElementById('loginError');
+  const code = (input.value || '').trim();
+
+  if (!code) {
+    showLoginError('请输入邀请码');
+    return;
+  }
+
+  const match = INVITE_CODES[code];
+  if (!match) {
+    showLoginError('邀请码无效，请检查后重试');
+    input.value = '';
+    input.focus();
+    return;
+  }
+
+  // Save session
+  const session = { code: code, role: match.role, label: match.label, ts: Date.now() };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+  // Hide login, show app
+  document.getElementById('loginOverlay').classList.add('hidden');
+  init();
+  showToast('欢迎进入 Lab.tool · ' + match.label + '模式');
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function renderUserBadge() {
+  const session = checkSession();
+  if (!session) return;
+  const el = document.getElementById('userBadge');
+  if (el) {
+    const cls = session.role === 'admin' ? 'admin' : 'guest';
+    el.innerHTML = '<span class="login-badge ' + cls + '">' + session.label + ' · ' + session.role.toUpperCase() + '</span>';
+  }
+}
+
 // ==================== START ====================
-init();
+(function() {
+  const session = checkSession();
+  if (session) {
+    // Already logged in, hide login and init
+    document.getElementById('loginOverlay').classList.add('hidden');
+    init();
+  }
+  // Otherwise login overlay stays visible
+})();
 </script>
 </body>
 </html>
