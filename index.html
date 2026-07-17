@@ -1159,6 +1159,228 @@ body {
   }
 }
 
+/* ========== Incoterms Calculator ========== */
+.incoterm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.incoterm-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1.5px solid var(--border-dark);
+  border-radius: 8px;
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  min-width: 70px;
+  line-height: 1.3;
+}
+.incoterm-tag small {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: var(--font-body);
+}
+.incoterm-tag:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212,175,55,0.15);
+}
+.incoterm-tag:hover small { color: var(--gold-light); }
+.incoterm-tag.active {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+  color: var(--gold);
+  box-shadow: 0 4px 16px rgba(212,175,55,0.2);
+}
+.incoterm-tag.active small { color: var(--gold-light); }
+
+.incoterm-info {
+  background: var(--bg-dark);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.incoterm-info .term-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-right: 8px;
+}
+.incoterm-info .term-en {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.incoterm-info .term-risk {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  background: rgba(42,157,143,0.15);
+  border: 1px solid rgba(42,157,143,0.3);
+  border-radius: 4px;
+  font-size: 11px;
+  color: #5cb8a6;
+}
+
+/* Incoterms result breakdown */
+.ic-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.ic-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+.ic-breakdown-row:hover { background: rgba(255,255,255,0.03); }
+.ic-breakdown-row.included {
+  background: rgba(42,157,143,0.08);
+  border-left: 2.5px solid #2a9d8f;
+}
+.ic-breakdown-row.excluded {
+  opacity: 0.45;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+.ic-breakdown-row.total {
+  background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+  border: 1px solid var(--gold-light);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 6px;
+  font-weight: 700;
+}
+.ic-breakdown-label { color: var(--text-secondary); }
+.ic-breakdown-row.included .ic-breakdown-label { color: var(--text-primary); }
+.ic-breakdown-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ic-breakdown-row.total .ic-breakdown-value {
+  font-size: 20px;
+  color: var(--gold);
+}
+.ic-price-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-dark);
+}
+.ic-price-box {
+  text-align: center;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--bg-dark);
+}
+.ic-price-box.highlight {
+  background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+  border: 1px solid var(--gold-light);
+}
+.ic-price-box .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.ic-price-box .value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ic-price-box.highlight .value { color: var(--gold); }
+.ic-price-box .unit {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* Incoterms matrix table */
+.ic-matrix-table {
+  min-width: 800px;
+  font-size: 12px;
+  text-align: center;
+}
+.ic-matrix-table th {
+  background: var(--bg-dark);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 13px;
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--gold);
+  white-space: nowrap;
+}
+.ic-matrix-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border-dark);
+  font-size: 12px;
+}
+.ic-matrix-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  padding-left: 12px;
+}
+.ic-matrix-table .cell-seller {
+  background: rgba(42,157,143,0.12);
+  color: #5cb8a6;
+  font-weight: 600;
+}
+.ic-matrix-table .cell-buyer {
+  background: rgba(231,111,81,0.12);
+  color: #e8856e;
+  font-weight: 600;
+}
+.ic-matrix-table .cell-either {
+  background: rgba(233,196,106,0.12);
+  color: #d4b54e;
+  font-weight: 600;
+}
+.ic-matrix-table .row-highlight td {
+  background: rgba(212,175,55,0.06);
+}
+
+@media (max-width: 768px) {
+  .incoterm-tags {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+  .incoterm-tag {
+    flex-shrink: 0;
+    min-width: 64px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .ic-price-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ========== Print ========== */
 @media print {
   .sidebar, .topbar, .page-header, .no-print { display: none !important; }
@@ -1243,6 +1465,10 @@ body {
     <div class="nav-item" data-page="pallet">
       <span class="nav-icon">📦</span>
       <span>托盘计算</span>
+    </div>
+    <div class="nav-item" data-page="incoterm">
+      <span class="nav-icon">🌐</span>
+      <span>术语计价</span>
     </div>
     <div class="nav-section-label">数据中心</div>
     <div class="nav-item" data-page="library">
@@ -2333,6 +2559,194 @@ body {
   </div>
 </div>
 
+<!-- ===================== PAGE: INCOTERMS CALCULATOR ===================== -->
+<div class="page" id="page-incoterm">
+  <div class="page-header">
+    <div>
+      <div class="page-title">术语计价</div>
+      <div class="page-subtitle">Incoterms 2020 Price Calculator · 国际贸易术语价格计算与权责归属</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="calcIncoterm()">📊 计算</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleIncotermMatrix()">📋 权责矩阵</button>
+    </div>
+  </div>
+
+  <!-- 术语选择器 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>选择贸易术语 / Select Incoterm</div></div>
+    <div class="card-body">
+      <div class="incoterm-tags" id="incoterm-tags">
+        <button class="incoterm-tag" data-term="EXW" onclick="selectIncoterm('EXW')">EXW<small>工厂交货</small></button>
+        <button class="incoterm-tag" data-term="FCA" onclick="selectIncoterm('FCA')">FCA<small>货交承运人</small></button>
+        <button class="incoterm-tag" data-term="FAS" onclick="selectIncoterm('FAS')">FAS<small>船边交货</small></button>
+        <button class="incoterm-tag" data-term="FOB" onclick="selectIncoterm('FOB')">FOB<small>船上交货</small></button>
+        <button class="incoterm-tag" data-term="CFR" onclick="selectIncoterm('CFR')">CFR<small>成本加运费</small></button>
+        <button class="incoterm-tag active" data-term="CIF" onclick="selectIncoterm('CIF')">CIF<small>成本保险运费</small></button>
+        <button class="incoterm-tag" data-term="CPT" onclick="selectIncoterm('CPT')">CPT<small>运费付至</small></button>
+        <button class="incoterm-tag" data-term="CIP" onclick="selectIncoterm('CIP')">CIP<small>运费保险付至</small></button>
+        <button class="incoterm-tag" data-term="DAP" onclick="selectIncoterm('DAP')">DAP<small>目的地交货</small></button>
+        <button class="incoterm-tag" data-term="DPU" onclick="selectIncoterm('DPU')">DPU<small>目的地卸货</small></button>
+        <button class="incoterm-tag" data-term="DDP" onclick="selectIncoterm('DDP')">DDP<small>完税后交货</small></button>
+      </div>
+      <div class="incoterm-info" id="incoterm-info"></div>
+    </div>
+  </div>
+
+  <!-- 费用输入 -->
+  <div class="calc-container">
+    <div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>基础成本 / Base Cost</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">商品总成本 <span class="req">*</span></label>
+              <input class="form-input mono" id="ic-cost" type="number" step="0.01" placeholder="50000.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">数量</label>
+              <input class="form-input mono" id="ic-qty" type="number" step="1" placeholder="1000" value="1000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">利润率 (%)</label>
+              <input class="form-input mono" id="ic-profit" type="number" step="0.1" placeholder="10" value="10">
+            </div>
+            <div class="form-group">
+              <label class="form-label">币种</label>
+              <select class="form-select" id="ic-currency">
+                <option>USD</option><option>EUR</option><option>CNY</option><option>GBP</option><option>JPY</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>出口国费用 / Export Costs</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">国内运输费</label>
+              <input class="form-input mono" id="ic-domestic-freight" type="number" step="0.01" placeholder="2000.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">出口报关费</label>
+              <input class="form-input mono" id="ic-customs" type="number" step="0.01" placeholder="500.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">港杂费 (THC等)</label>
+              <input class="form-input mono" id="ic-port-charges" type="number" step="0.01" placeholder="800.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">装船费</label>
+              <input class="form-input mono" id="ic-loading" type="number" step="0.01" placeholder="300.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">出口商检费</label>
+              <input class="form-input mono" id="ic-inspection" type="number" step="0.01" placeholder="200.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">产地证/其他</label>
+              <input class="form-input mono" id="ic-cert" type="number" step="0.01" placeholder="150.00">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>国际运输 / International Transport</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">国际运费</label>
+              <input class="form-input mono" id="ic-intl-freight" type="number" step="0.01" placeholder="3500.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">保险费率 (%)</label>
+              <input class="form-input mono" id="ic-insurance-rate" type="number" step="0.01" placeholder="0.3" value="0.3">
+            </div>
+            <div class="form-group">
+              <label class="form-label">运输方式</label>
+              <select class="form-select" id="ic-transport-mode">
+                <option value="sea">海运 Sea</option>
+                <option value="air">空运 Air</option>
+                <option value="land">陆运 Land</option>
+                <option value="rail">铁运 Rail</option>
+                <option value="multi">多式联运 Multimodal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>目的国费用 / Destination Costs</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">目的港卸货费</label>
+              <input class="form-input mono" id="ic-dest-unload" type="number" step="0.01" placeholder="500.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">目的地内陆运费</label>
+              <input class="form-input mono" id="ic-dest-inland" type="number" step="0.01" placeholder="800.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">进口清关费</label>
+              <input class="form-input mono" id="ic-dest-customs" type="number" step="0.01" placeholder="400.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">进口关税率 (%)</label>
+              <input class="form-input mono" id="ic-duty-rate" type="number" step="0.01" placeholder="5" value="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">增值税率 (%)</label>
+              <input class="form-input mono" id="ic-vat-rate" type="number" step="0.01" placeholder="13" value="13">
+            </div>
+            <div class="form-group">
+              <label class="form-label">其他目的国费用</label>
+              <input class="form-input mono" id="ic-dest-other" type="number" step="0.01" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结果区 -->
+    <div class="calc-results">
+      <div class="card" id="ic-result-card" style="position:sticky;top:0">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>计算结果 / Result</div></div>
+        <div class="card-body" id="ic-result-body">
+          <div class="empty-state">
+            <div class="icon">🌐</div>
+            <div>选择术语并输入费用后点击「计算」</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 权责矩阵（默认隐藏） -->
+  <div class="card" id="ic-matrix-card" style="display:none">
+    <div class="card-header">
+      <div class="card-title"><span class="dot"></span>买卖方权责归属矩阵 / Obligations Matrix</div>
+      <button class="btn btn-outline btn-sm" onclick="toggleIncotermMatrix()">收起</button>
+    </div>
+    <div class="card-body">
+      <div class="data-table-wrap">
+        <table class="data-table ic-matrix-table" id="ic-matrix-table">
+        </table>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#2a9d8f;vertical-align:middle;margin-right:4px"></span> 卖方责任 (Seller)
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#e76f51;vertical-align:middle;margin-left:12px;margin-right:4px"></span> 买方责任 (Buyer)
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#e9c46a;vertical-align:middle;margin-left:12px;margin-right:4px"></span> 可协商 (Negotiable)
+      </div>
+    </div>
+  </div>
+</div>
+
   </div><!-- end content-area -->
 </div><!-- end main -->
 
@@ -2349,7 +2763,8 @@ const App = {
     spec: { params: [] },
     weight: { items: [] },
     container: { cargo: [] },
-    pallet: { items: [] }
+    pallet: { items: [] },
+    incoterm: {}
   },
   currentPage: 'proforma'
 };
@@ -2420,6 +2835,7 @@ const PAGE_TITLES = {
   weight:     ['重量计算器', 'Weight Calculator'],
   container:  ['装箱计算', 'Container Loading Calculator'],
   pallet:     ['托盘计算', 'Pallet Calculator'],
+  incoterm:   ['术语计价', 'Incoterms Price Calculator'],
   library:    ['产品库', 'Product Library'],
   settings:   ['公司信息', 'Company Settings']
 };
@@ -2561,6 +2977,9 @@ function collectPageData(page) {
         items: collectTableRows('pt-tbody', ['desc','l','w','h','qty','weight'])
       };
       break;
+    case 'incoterm':
+      saveIncotermData();
+      break;
     case 'library':
       App.data.products = collectTableRows('lib-tbody', ['img','name','spec','unit','price','nw','gw','l','w','h']);
       break;
@@ -2666,6 +3085,9 @@ function restorePageData() {
   setVal('pt-max-layers', pt.maxLayers || '');
   setVal('pt-max-height', pt.maxHeight || '1800');
   setToggle('pt-overhang-toggle', pt.overhang === true);
+
+  // Incoterm
+  loadIncotermData();
 }
 
 function setVal(id, val) {
@@ -5610,6 +6032,383 @@ function showToast(msg) {
   toast.textContent = msg;
   document.body.appendChild(toast);
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2000);
+}
+
+// ==================== INCOTERMS CALCULATOR ====================
+
+const INCOTERMS_DATA = {
+  EXW: {
+    name: 'EXW · 工厂交货',
+    en: 'Ex Works (insert named place of delivery)',
+    mode: 'any',
+    riskPoint: '卖方所在地（工厂/仓库）将货物交给买方处置时',
+    desc: '卖方在其所在地或其他指定地点将货物交给买方处置即完成交货。卖方不负责装货、不负责清关、不负责运输。买方承担自卖方所在地起的一切费用和风险。此术语下卖方责任最小、买方责任最大。',
+    includes: [],
+  },
+  FCA: {
+    name: 'FCA · 货交承运人',
+    en: 'Free Carrier (insert named place of delivery)',
+    mode: 'any',
+    riskPoint: '指定交货地点将货物交给买方指定的承运人或其他人时',
+    desc: '卖方在指定地点将已清关的货物交给买方指定的承运人即完成交货。若交货在卖方场所，卖方负责装货；若在其他地点，卖方不负责卸货。适用于任何运输方式。',
+    includes: ['export_clearance', 'domestic_freight', 'loading', 'inspection', 'cert'],
+  },
+  FAS: {
+    name: 'FAS · 船边交货',
+    en: 'Free Alongside Ship (insert named port of shipment)',
+    mode: 'sea',
+    riskPoint: '装运港船边将货物置于买方处置时',
+    desc: '卖方负责将货物运至指定装运港船边（码头上或驳船上）即完成交货。买方承担此后一切费用和风险。仅适用于海运或内河水运。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'inspection', 'cert'],
+  },
+  FOB: {
+    name: 'FOB · 船上交货',
+    en: 'Free On Board (insert named port of shipment)',
+    mode: 'sea',
+    riskPoint: '货物在装运港装上指定船只时',
+    desc: '卖方负责将货物在指定装运港装上指定船只即完成交货。卖方承担装船前的一切费用和风险，包括出口清关。买方承担货物装船后的一切费用和风险。仅适用于海运或内河水运。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert'],
+  },
+  CFR: {
+    name: 'CFR · 成本加运费',
+    en: 'Cost and Freight (insert named port of destination)',
+    mode: 'sea',
+    riskPoint: '货物在装运港装上船只时（风险在装运港转移，但运费付至目的港）',
+    desc: '卖方支付将货物运至指定目的港所需的运费，但货物的风险在装运港货物装上船时即转移给买方。卖方负责出口清关。仅适用于海运或内河水运。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert', 'intl_freight'],
+  },
+  CIF: {
+    name: 'CIF · 成本保险运费',
+    en: 'Cost, Insurance and Freight (insert named port of destination)',
+    mode: 'sea',
+    riskPoint: '货物在装运港装上船只时（风险在装运港转移，但运费和保险付至目的港）',
+    desc: '卖方除承担CFR相同义务外，还须为买方办理海运货物保险，覆盖买方货物装船后运输途中灭失或损坏风险。卖方仅需投保最低险别（C条款）。仅适用于海运或内河水运。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert', 'intl_freight', 'insurance'],
+  },
+  CPT: {
+    name: 'CPT · 运费付至',
+    en: 'Carriage Paid To (insert named place of destination)',
+    mode: 'any',
+    riskPoint: '货物交给第一承运人时',
+    desc: '卖方将货物交给其指定的承运人，并支付将货物运至目的地的运费。风险在货物交给第一承运人时转移。适用于任何运输方式，尤其适合多式联运。',
+    includes: ['export_clearance', 'domestic_freight', 'loading', 'inspection', 'cert', 'intl_freight'],
+  },
+  CIP: {
+    name: 'CIP · 运费保险付至',
+    en: 'Carriage and Insurance Paid To (insert named place of destination)',
+    mode: 'any',
+    riskPoint: '货物交给第一承运人时',
+    desc: '卖方除承担CPT相同义务外，还须为买方办理货物运输保险。2020版要求CIP下卖方应投保最高险别（A条款），与CIF的最低险别要求不同。适用于任何运输方式。',
+    includes: ['export_clearance', 'domestic_freight', 'loading', 'inspection', 'cert', 'intl_freight', 'insurance'],
+  },
+  DAP: {
+    name: 'DAP · 目的地交货',
+    en: 'Delivered At Place (insert named place of destination)',
+    mode: 'any',
+    riskPoint: '货物在指定目的地到达运输工具上交给买方处置时（未卸货）',
+    desc: '卖方将货物运至指定目的地，在到达的运输工具上交给买方处置即完成交货（不卸货）。卖方承担运至目的地的所有费用和风险，但不负责进口清关和进口关税。买方负责卸货和进口清关。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert', 'intl_freight', 'dest_unload', 'dest_inland'],
+  },
+  DPU: {
+    name: 'DPU · 目的地卸货',
+    en: 'Delivered at Place Unloaded (insert named place of destination)',
+    mode: 'any',
+    riskPoint: '货物在指定目的地从到达的运输工具上卸下交给买方处置时',
+    desc: '卖方将货物运至指定目的地并卸货后完成交货。这是唯一要求卖方负责卸货的D组术语。卖方承担运至目的地并卸货的所有费用和风险，但不负责进口清关。买方负责进口清关。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert', 'intl_freight', 'dest_unload', 'dest_inland'],
+  },
+  DDP: {
+    name: 'DDP · 完税后交货',
+    en: 'Delivered Duty Paid (insert named place of destination)',
+    mode: 'any',
+    riskPoint: '货物在指定目的地已清关并卸货后交给买方处置时',
+    desc: '卖方承担将货物运至指定目的地的一切费用和风险，包括进口清关、缴纳进口关税和增值税。此术语下卖方责任最大、买方责任最小。卖方须在目的地国家办理进口清关手续。',
+    includes: ['export_clearance', 'domestic_freight', 'port_charges', 'loading', 'inspection', 'cert', 'intl_freight', 'insurance', 'dest_unload', 'dest_inland', 'dest_customs', 'duty', 'vat', 'dest_other'],
+  },
+};
+
+// Obligation matrix: for each obligation, which party is responsible under each term
+// S = Seller, B = Buyer, E = Either (negotiable)
+const OBLIGATIONS = [
+  { key: 'packing', label: '包装 / Packing', data: { EXW:'S', FCA:'S', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'S', CIP:'S', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'loading_origin', label: '装货(工厂) / Loading at premises', data: { EXW:'B', FCA:'S', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'S', CIP:'S', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'domestic_transport', label: '国内运输 / Domestic transport', data: { EXW:'B', FCA:'S', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'S', CIP:'S', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'export_customs', label: '出口清关 / Export clearance', data: { EXW:'B', FCA:'S', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'S', CIP:'S', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'terminal_origin', label: '装运港费用 / Terminal charges (origin)', data: { EXW:'B', FCA:'E', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'E', CIP:'E', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'loading_vessel', label: '装船 / Loading on vessel', data: { EXW:'B', FCA:'B', FAS:'S', FOB:'S', CFR:'S', CIF:'S', CPT:'B', CIP:'B', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'intl_freight', label: '国际运输 / International freight', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'S', CIF:'S', CPT:'S', CIP:'S', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'insurance', label: '运输保险 / Cargo insurance', data: { EXW:'B', FCA:'E', FAS:'B', FOB:'B', CFR:'B', CIF:'S', CPT:'E', CIP:'S', DAP:'E', DPU:'E', DDP:'S' } },
+  { key: 'discharge', label: '卸货(目的港) / Discharge at destination', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'B', DPU:'S', DDP:'S' } },
+  { key: 'terminal_dest', label: '目的港费用 / Terminal charges (dest.)', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'E', DPU:'E', DDP:'S' } },
+  { key: 'dest_inland', label: '目的地内陆运输 / Inland transport (dest.)', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'S', DPU:'S', DDP:'S' } },
+  { key: 'import_customs', label: '进口清关 / Import clearance', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'B', DPU:'B', DDP:'S' } },
+  { key: 'import_duty', label: '进口关税 / Import duty', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'B', DPU:'B', DDP:'S' } },
+  { key: 'import_vat', label: '增值税 / VAT', data: { EXW:'B', FCA:'B', FAS:'B', FOB:'B', CFR:'B', CIF:'B', CPT:'B', CIP:'B', DAP:'B', DPU:'B', DDP:'S' } },
+];
+
+let currentIncoterm = 'CIF';
+
+function selectIncoterm(term) {
+  currentIncoterm = term;
+  document.querySelectorAll('.incoterm-tag').forEach(t => {
+    t.classList.toggle('active', t.dataset.term === term);
+  });
+  renderIncotermInfo();
+  calcIncoterm();
+  saveIncotermData();
+}
+
+function renderIncotermInfo() {
+  const info = INCOTERMS_DATA[currentIncoterm];
+  if (!info) return;
+  const modeText = info.mode === 'sea' ? '仅海运/内河水运' : (info.mode === 'any' ? '任意运输方式' : info.mode);
+  const el = document.getElementById('incoterm-info');
+  if (el) {
+    el.innerHTML = `
+      <div><span class="term-name">${currentIncoterm}</span><span class="term-en">${info.en}</span></div>
+      <div style="margin-top:6px">${info.desc}</div>
+      <div class="term-risk">⚠ 风险转移点：${info.riskPoint}</div>
+      <div style="margin-top:4px;font-size:11px;color:var(--text-muted)">适用运输：${modeText}</div>
+    `;
+  }
+}
+
+function num(id) {
+  const el = document.getElementById(id);
+  return el ? (parseFloat(el.value) || 0) : 0;
+}
+
+function calcIncoterm() {
+  const term = currentIncoterm;
+  const info = INCOTERMS_DATA[term];
+  if (!info) return;
+
+  const currency = v('ic-currency') || 'USD';
+  const qty = num('ic-qty') || 1;
+  const cost = num('ic-cost');
+  const profitRate = num('ic-profit');
+  const domesticFreight = num('ic-domestic-freight');
+  const customs = num('ic-customs');
+  const portCharges = num('ic-port-charges');
+  const loading = num('ic-loading');
+  const inspection = num('ic-inspection');
+  const cert = num('ic-cert');
+  const intlFreight = num('ic-intl-freight');
+  const insuranceRate = num('ic-insurance-rate');
+  const destUnload = num('ic-dest-unload');
+  const destInland = num('ic-dest-inland');
+  const destCustoms = num('ic-dest-customs');
+  const dutyRate = num('ic-duty-rate');
+  const vatRate = num('ic-vat-rate');
+  const destOther = num('ic-dest-other');
+
+  if (cost <= 0) {
+    document.getElementById('ic-result-body').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <div>请输入商品总成本</div>
+      </div>`;
+    return;
+  }
+
+  // Step-by-step price accumulation
+  // 1. EXW price (cost + profit)
+  const profit = cost * profitRate / 100;
+  const exwPrice = cost + profit;
+
+  // 2. Export costs
+  const exportClearanceCost = customs;
+  const domesticTransportCost = domesticFreight;
+  const portChargesCost = portCharges;
+  const loadingCost = loading;
+  const inspectionCost = inspection;
+  const certCost = cert;
+  const totalExportCosts = exportClearanceCost + domesticTransportCost + portChargesCost + loadingCost + inspectionCost + certCost;
+
+  // FOB/FAS/FCA price = EXW + export costs
+  const fobPrice = exwPrice + totalExportCosts;
+
+  // 3. International freight
+  const intlFreightCost = intlFreight;
+
+  // CFR/CPT price = FOB + international freight
+  const cfrPrice = fobPrice + intlFreightCost;
+
+  // 4. Insurance
+  // CIF insurance = (CIF price) × insurance rate × 110% ( CIF = CFR / (1 - insuranceRate% × 1.1) )
+  // Solve: CIF = (CFR + Insurance) where Insurance = CIF × rate% × 1.1
+  // => CIF = CFR / (1 - rate/100 × 1.1)
+  const insuranceFactor = insuranceRate / 100 * 1.1;
+  let insuranceCost = 0;
+  let cifPrice = cfrPrice;
+  if (insuranceFactor > 0 && insuranceFactor < 1) {
+    cifPrice = cfrPrice / (1 - insuranceFactor);
+    insuranceCost = cifPrice - cfrPrice;
+  } else {
+    insuranceCost = cfrPrice * insuranceRate / 100;
+    cifPrice = cfrPrice + insuranceCost;
+  }
+
+  // 5. Destination costs
+  const destUnloadCost = destUnload;
+  const destInlandCost = destInland;
+  const destCustomsCost = destCustoms;
+  const destOtherCost = destOther;
+
+  // DAP/DPU price = CIF + dest unload + dest inland (no import duty/customs)
+  const dapPrice = cifPrice + destUnloadCost + destInlandCost;
+
+  // 6. Import duty (on CIF value)
+  const dutyCost = cifPrice * dutyRate / 100;
+
+  // 7. VAT (on CIF + duty)
+  const vatCost = (cifPrice + dutyCost) * vatRate / 100;
+
+  // DDP price = DAP + dest customs + duty + VAT + other
+  const ddpPrice = dapPrice + destCustomsCost + dutyCost + vatCost + destOtherCost;
+
+  // All cost items with their keys for inclusion check
+  const costItems = [
+    { key: 'cost', label: '商品成本 Cost', value: cost, alwaysShow: true },
+    { key: 'profit', label: `利润 (${profitRate}%) Profit`, value: profit, alwaysShow: true },
+    { key: 'domestic_freight', label: '国内运输 Domestic Transport', value: domesticTransportCost },
+    { key: 'export_clearance', label: '出口报关 Export Clearance', value: exportClearanceCost },
+    { key: 'port_charges', label: '港杂费 Port Charges (THC)', value: portChargesCost },
+    { key: 'loading', label: '装船费 Loading', value: loadingCost },
+    { key: 'inspection', label: '商检费 Inspection', value: inspectionCost },
+    { key: 'cert', label: '产地证/证书 Certificate', value: certCost },
+    { key: 'intl_freight', label: '国际运费 Intl Freight', value: intlFreightCost },
+    { key: 'insurance', label: `保险费 Insurance (${insuranceRate}%)`, value: insuranceCost },
+    { key: 'dest_unload', label: '目的港卸货 Dest Unloading', value: destUnloadCost },
+    { key: 'dest_inland', label: '目的地内陆 Dest Inland', value: destInlandCost },
+    { key: 'dest_customs', label: '进口清关 Import Clearance', value: destCustomsCost },
+    { key: 'duty', label: `进口关税 Import Duty (${dutyRate}%)`, value: dutyCost },
+    { key: 'vat', label: `增值税 VAT (${vatRate}%)`, value: vatCost },
+    { key: 'dest_other', label: '其他目的国费用 Other Dest', value: destOtherCost },
+  ];
+
+  // Determine final price based on term
+  const termPrices = {
+    EXW: exwPrice, FCA: fobPrice, FAS: fobPrice, FOB: fobPrice,
+    CFR: cfrPrice, CIF: cifPrice, CPT: cfrPrice, CIP: cifPrice,
+    DAP: dapPrice, DPU: dapPrice, DDP: ddpPrice
+  };
+  const finalPrice = termPrices[term] || exwPrice;
+  const unitPrice = finalPrice / qty;
+
+  // Build breakdown HTML
+  const includedSet = new Set(info.includes);
+  let breakdownHTML = '';
+  costItems.forEach(item => {
+    const isIncluded = item.alwaysShow || includedSet.has(item.key);
+    const rowClass = item.alwaysShow ? '' : (isIncluded ? 'included' : 'excluded');
+    breakdownHTML += `
+      <div class="ic-breakdown-row ${rowClass}">
+        <span class="ic-breakdown-label">${item.label}</span>
+        <span class="ic-breakdown-value">${currency} ${item.value.toFixed(2)}</span>
+      </div>`;
+  });
+  breakdownHTML += `
+    <div class="ic-breakdown-row total">
+      <span class="ic-breakdown-label">${term} 总价 Total Price</span>
+      <span class="ic-breakdown-value">${currency} ${finalPrice.toFixed(2)}</span>
+    </div>`;
+
+  // Price summary
+  const summaryHTML = `
+    <div class="ic-price-summary">
+      <div class="ic-price-box highlight">
+        <div class="label">${term} 单价 Unit Price</div>
+        <div class="value">${currency} ${unitPrice.toFixed(4)}<span class="unit">/${v('ic-qty') || ''} ${qty > 1 ? 'PCS' : 'PC'}</span></div>
+      </div>
+      <div class="ic-price-box">
+        <div class="label">EXW 单价 (参考) EXW Unit</div>
+        <div class="value" style="font-size:18px">${currency} ${(exwPrice / qty).toFixed(4)}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('ic-result-body').innerHTML = breakdownHTML + summaryHTML;
+}
+
+function toggleIncotermMatrix() {
+  const card = document.getElementById('ic-matrix-card');
+  if (card.style.display === 'none') {
+    renderIncotermMatrix();
+    card.style.display = '';
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function renderIncotermMatrix() {
+  const terms = Object.keys(INCOTERMS_DATA);
+  const table = document.getElementById('ic-matrix-table');
+  if (!table) return;
+
+  // Header
+  let html = '<thead><tr><th>义务 / Obligation</th>';
+  terms.forEach(t => {
+    html += `<th${t === currentIncoterm ? ' class="row-highlight"' : ''}>${t}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // Rows
+  OBLIGATIONS.forEach(ob => {
+    const isHighlightRow = false; // Could highlight specific rows
+    html += `<tr>`;
+    html += `<td>${ob.label}</td>`;
+    terms.forEach(t => {
+      const party = ob.data[t];
+      let cellClass = '', cellText = '';
+      if (party === 'S') { cellClass = 'cell-seller'; cellText = '卖方'; }
+      else if (party === 'B') { cellClass = 'cell-buyer'; cellText = '买方'; }
+      else { cellClass = 'cell-either'; cellText = '协商'; }
+      const highlight = t === currentIncoterm ? ' row-highlight' : '';
+      html += `<td class="${cellClass}${highlight}">${cellText}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function saveIncotermData() {
+  App.data.incoterm = {
+    term: currentIncoterm,
+    cost: v('ic-cost'), qty: v('ic-qty'), profit: v('ic-profit'), currency: v('ic-currency'),
+    domesticFreight: v('ic-domestic-freight'), customs: v('ic-customs'),
+    portCharges: v('ic-port-charges'), loading: v('ic-loading'),
+    inspection: v('ic-inspection'), cert: v('ic-cert'),
+    intlFreight: v('ic-intl-freight'), insuranceRate: v('ic-insurance-rate'),
+    transportMode: v('ic-transport-mode'),
+    destUnload: v('ic-dest-unload'), destInland: v('ic-dest-inland'),
+    destCustoms: v('ic-dest-customs'), dutyRate: v('ic-duty-rate'),
+    vatRate: v('ic-vat-rate'), destOther: v('ic-dest-other')
+  };
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+}
+
+function loadIncotermData() {
+  const ic = App.data.incoterm || {};
+  if (ic.term) {
+    currentIncoterm = ic.term;
+    document.querySelectorAll('.incoterm-tag').forEach(t => {
+      t.classList.toggle('active', t.dataset.term === ic.term);
+    });
+  }
+  setVal('ic-cost', ic.cost); setVal('ic-qty', ic.qty); setVal('ic-profit', ic.profit); setVal('ic-currency', ic.currency);
+  setVal('ic-domestic-freight', ic.domesticFreight); setVal('ic-customs', ic.customs);
+  setVal('ic-port-charges', ic.portCharges); setVal('ic-loading', ic.loading);
+  setVal('ic-inspection', ic.inspection); setVal('ic-cert', ic.cert);
+  setVal('ic-intl-freight', ic.intlFreight); setVal('ic-insurance-rate', ic.insuranceRate);
+  setVal('ic-transport-mode', ic.transportMode);
+  setVal('ic-dest-unload', ic.destUnload); setVal('ic-dest-inland', ic.destInland);
+  setVal('ic-dest-customs', ic.destCustoms); setVal('ic-duty-rate', ic.dutyRate);
+  setVal('ic-vat-rate', ic.vatRate); setVal('ic-dest-other', ic.destOther);
+  renderIncotermInfo();
+  calcIncoterm();
 }
 
 // ==================== START ====================
