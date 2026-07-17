@@ -4450,8 +4450,60 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       sTH.position.set(cx0 - gEXT - 0.3, pTopY / 2, cz0 - gEXT);
       labelGroup.add(sTH);
 
+      // === 4. 货物到托盘边缘的间隙 (紫红色, 从右下前角引出) ===
+      var CLR_CLEAR = { hex: 0xc45fb5, css: '#c45fb5' };
+      var gapEXT = 0.35;
+
+      // ΔX: 货物右边缘 → 托盘右边缘 (沿底面前方, offset in -Z)
+      var xGapMm = Math.round(palletL - cols * result.boxL_orig);
+      if (xGapMm > 0) {
+        var xg_s = new THREE.Vector3(cargoRightX, 0, cz0 - gapEXT);
+        var xg_e = new THREE.Vector3(cx1, 0, cz0 - gapEXT);
+        labelGroup.add(makeDimLine(xg_s, xg_e, CLR_CLEAR.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cargoRightX, 0, cz0), xg_s, CLR_CLEAR.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), xg_e, CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
+        var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        sXG.position.set((cargoRightX + cx1) / 2, 0, cz0 - gapEXT - 0.25);
+        labelGroup.add(sXG);
+      }
+
+      // ΔZ: 货物后边缘 → 托盘后边缘 (沿底面左侧, offset in -X)
+      var zGapMm = Math.round(palletW - rows * result.boxW_orig);
+      if (zGapMm > 0) {
+        var zg_s = new THREE.Vector3(cx0 - gapEXT, 0, cargoBackZ);
+        var zg_e = new THREE.Vector3(cx0 - gapEXT, 0, cz1);
+        labelGroup.add(makeDimLine(zg_s, zg_e, CLR_CLEAR.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cargoBackZ), zg_s, CLR_CLEAR.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), zg_e, CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
+        var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        sZG.position.set(cx0 - gapEXT - 0.25, 0, (cargoBackZ + cz1) / 2);
+        labelGroup.add(sZG);
+      }
+
+      // ΔY: 货物顶部 → 最大高度限制 (沿右侧前方, offset in -Z)
+      var maxHeightMm = parseFloat(document.getElementById('pt-max-height').value) || 0;
+      if (maxHeightMm > 0 && totalHmm < maxHeightMm) {
+        var yGapMm = Math.round(maxHeightMm - totalHmm);
+        var yLimitY = maxHeightMm * SCALE;
+        var yg_s = new THREE.Vector3(cx1 + gapEXT, cargoTopY, cz0);
+        var yg_e = new THREE.Vector3(cx1 + gapEXT, yLimitY, cz0);
+        labelGroup.add(makeDimLine(yg_s, yg_e, CLR_CLEAR.hex, 0.8));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cx1, cargoTopY, cz0), yg_s, CLR_CLEAR.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(cx1, yLimitY, cz0), yg_e, CLR_CLEAR.hex));
+        labelGroup.add(makeExtLine(yg_e, new THREE.Vector3(cx1 + gapEXT, yLimitY, cz0 - gapEXT), CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_CLEAR.hex));
+        labelGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_CLEAR.hex));
+        var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        sYG.position.set(cx1 + gapEXT + 0.25, (cargoTopY + yLimitY) / 2, cz0);
+        labelGroup.add(sYG);
+      }
+
       // ====== Info Text ======
-      infoEl.textContent = '托盘 ' + palletL + '×' + palletW + 'mm  |  每层 ' + result.perLayer + '箱 × ' + layers + '层 = ' + result.perPalletBoxes + '箱  |  总高 ' + totalHmm + 'mm';
+      infoEl.textContent = '托盘 ' + palletL + '×' + palletW + 'mm  |  每层 ' + result.perLayer + '箱 × ' + layers + '层 = ' + result.perPalletBoxes + '箱  |  总高 ' + totalHmm + 'mm\n间隙 X:' + xGapMm + 'mm  Z:' + zGapMm + 'mm' + (typeof yGapMm !== 'undefined' ? '  Y:' + yGapMm + 'mm' : '');
       hintEl.textContent = '拖拽旋转 · 滚轮缩放 · 右键平移';
 
       // ====== Toggle Controls ======
