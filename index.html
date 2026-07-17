@@ -1010,6 +1010,8 @@ body {
     </div>
     <div class="no-print" style="display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">👁️ 预览</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleStamp('proforma')" id="proforma-stamp-btn">印章: 关</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleSignature('proforma')" id="proforma-sig-btn">签字: 关</button>
       <button class="btn btn-primary btn-sm" onclick="addRow('proforma')">+ 添加行</button>
     </div>
   </div>
@@ -1129,6 +1131,8 @@ body {
     </div>
     <div class="no-print" style="display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="togglePreview('commercial')">👁️ 预览</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleStamp('commercial')" id="commercial-stamp-btn">印章: 关</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleSignature('commercial')" id="commercial-sig-btn">签字: 关</button>
       <button class="btn btn-primary btn-sm" onclick="addRow('commercial')">+ 添加行</button>
     </div>
   </div>
@@ -1247,6 +1251,8 @@ body {
     </div>
     <div class="no-print" style="display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="togglePreview('packing')">👁️ 预览</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleStamp('packing')" id="packing-stamp-btn">印章: 关</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleSignature('packing')" id="packing-sig-btn">签字: 关</button>
       <button class="btn btn-primary btn-sm" onclick="addRow('packing')">+ 添加行</button>
     </div>
   </div>
@@ -1421,8 +1427,10 @@ body {
       <div class="page-title">产品规格书</div>
       <div class="page-subtitle">Product Specification · 产品技术参数与规格说明</div>
     </div>
-    <div class="no-print">
+    <div class="no-print" style="display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="togglePreview('spec')">👁️ 预览</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleStamp('spec')" id="spec-stamp-btn">印章: 关</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleSignature('spec')" id="spec-sig-btn">签字: 关</button>
     </div>
   </div>
 
@@ -1833,6 +1841,37 @@ body {
   </div>
 
   <div class="card">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>印章与签字管理</div></div>
+    <div class="card-body">
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px">
+          <label class="form-label">公司章 / Company Stamp</label>
+          <div id="stamp-preview-box" style="width:160px;height:160px;border:2px dashed var(--border-dark);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg-dark);margin-bottom:8px">
+            <span style="color:var(--text-muted);font-size:12px" id="stamp-placeholder">未上传</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('stamp-upload-input').click()">📤 上传公司章</button>
+            <button class="btn btn-danger btn-sm" onclick="clearStamp()">✕ 清除</button>
+          </div>
+          <input type="file" id="stamp-upload-input" style="display:none" accept="image/*" onchange="uploadStamp(event)">
+        </div>
+        <div style="flex:1;min-width:240px">
+          <label class="form-label">负责人签字 / Authorized Signature</label>
+          <div id="signature-preview-box" style="width:160px;height:160px;border:2px dashed var(--border-dark);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg-dark);margin-bottom:8px">
+            <span style="color:var(--text-muted);font-size:12px" id="signature-placeholder">未上传</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('signature-upload-input').click()">📤 上传签字</button>
+            <button class="btn btn-danger btn-sm" onclick="clearSignature()">✕ 清除</button>
+          </div>
+          <input type="file" id="signature-upload-input" style="display:none" accept="image/*" onchange="uploadSignature(event)">
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">章和签字上传后保存在数据中心，预览或打印单据时自动显示在签名区。每个单据可在编辑界面单独开启/关闭。</div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-header"><div class="card-title"><span class="dot"></span>数据管理</div></div>
     <div class="card-body">
       <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1879,6 +1918,8 @@ const CONTAINERS = {
 function init() {
   loadData();
   loadSettings();
+  updateStampPreview();
+  updateSignaturePreview();
   setupNavigation();
   initAllTables();
   updateContainerInfo();
@@ -3365,8 +3406,9 @@ function renderProformaPreview(companyBlock, companyName) {
       </div>
       ${pi.bank ? `<div class="doc-footer" style="margin-top:0"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
       <div class="doc-signature">
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+        ${(() => { var ss = getStampSigHtml('proforma'); return `
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
       </div>
     </div>`;
 }
@@ -3442,8 +3484,9 @@ function renderCommercialPreview(companyBlock, companyName) {
       ${ci.declaration ? `<div style="margin-top:16px;font-size:11px;font-style:italic;color:#555">${ci.declaration}</div>` : ''}
       ${ci.remarks ? `<div style="margin-top:8px;font-size:11px"><strong>Remarks:</strong> ${ci.remarks.replace(/\n/g,'<br>')}</div>` : ''}
       <div class="doc-signature">
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+        ${(() => { var ss = getStampSigHtml('commercial'); return `
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
       </div>
     </div>`;
 }
@@ -3532,8 +3575,9 @@ function renderPackingPreview(companyBlock, companyName) {
         <div style="text-align:center;border:1px solid var(--gold-light);background:#fdf8e8;padding:10px;border-radius:4px"><div style="font-size:10px;color:var(--gold-dim)">Total CBM</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono);color:var(--gold-dim)">${fmtNum(totalCbm, 3)}</div></div>
       </div>
       <div class="doc-signature">
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+        ${(() => { var ss = getStampSigHtml('packing'); return `
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
       </div>
     </div>`;
 }
@@ -3629,8 +3673,9 @@ function renderSpecPreview(companyBlock, companyName) {
         </tbody>
       </table>
       <div class="doc-signature">
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Prepared By</div></div>
-        <div class="doc-sig-block"><div class="line"></div><div class="label">Date</div></div>
+        ${(() => { var ss = getStampSigHtml('spec'); return `
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.sigImg}</div><div class="label">Prepared By</div></div>
+        <div class="doc-sig-block"><div class="line" style="position:relative">${ss.stampImg}</div><div class="label">Company Stamp</div></div>`; })()}
       </div>
     </div>`;
 }
@@ -3780,12 +3825,155 @@ function saveSettings() {
   App.data.company = {
     en: v('set-company-en'), cn: v('set-company-cn'), address: v('set-address'),
     tel: v('set-tel'), fax: v('set-fax'), email: v('set-email'), website: v('set-website'),
-    vat: v('set-vat'), uscc: v('set-uscc'), bank: v('set-bank')
+    vat: v('set-vat'), uscc: v('set-uscc'), bank: v('set-bank'),
+    stamp: App.data.company ? (App.data.company.stamp || '') : '',
+    signature: App.data.company ? (App.data.company.signature || '') : ''
   };
   localStorage.setItem('tradepro_data', JSON.stringify(App.data));
   // Show toast
   showToast('公司信息已保存');
   autofillCompany();
+}
+
+// ==================== STAMP & SIGNATURE MANAGEMENT ====================
+function uploadStamp(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 1024 * 1024) { showToast('图片不能超过1MB', 'error'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Compress to max 300px
+      var canvas = document.createElement('canvas');
+      var maxSize = 300;
+      var w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/png');
+      if (!App.data.company) App.data.company = {};
+      App.data.company.stamp = dataUrl;
+      localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+      updateStampPreview();
+      showToast('公司章已上传并保存');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function clearStamp() {
+  if (!App.data.company) App.data.company = {};
+  App.data.company.stamp = '';
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+  updateStampPreview();
+  showToast('公司章已清除');
+}
+
+function updateStampPreview() {
+  var box = document.getElementById('stamp-preview-box');
+  var stamp = App.data.company && App.data.company.stamp;
+  if (stamp) {
+    box.innerHTML = '<img src="' + stamp + '" style="width:100%;height:100%;object-fit:contain">';
+  } else {
+    box.innerHTML = '<span style="color:var(--text-muted);font-size:12px">未上传</span>';
+  }
+}
+
+function uploadSignature(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 1024 * 1024) { showToast('图片不能超过1MB', 'error'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxSize = 300;
+      var w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/png');
+      if (!App.data.company) App.data.company = {};
+      App.data.company.signature = dataUrl;
+      localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+      updateSignaturePreview();
+      showToast('签字已上传并保存');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function clearSignature() {
+  if (!App.data.company) App.data.company = {};
+  App.data.company.signature = '';
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+  updateSignaturePreview();
+  showToast('签字已清除');
+}
+
+function updateSignaturePreview() {
+  var box = document.getElementById('signature-preview-box');
+  var sig = App.data.company && App.data.company.signature;
+  if (sig) {
+    box.innerHTML = '<img src="' + sig + '" style="width:100%;height:100%;object-fit:contain">';
+  } else {
+    box.innerHTML = '<span style="color:var(--text-muted);font-size:12px">未上传</span>';
+  }
+}
+
+// Per-document stamp/signature toggle state
+var DOC_STAMP_SIG = {
+  proforma: { stamp: false, sig: false },
+  commercial: { stamp: false, sig: false },
+  packing: { stamp: false, sig: false },
+  spec: { stamp: false, sig: false }
+};
+
+function toggleStamp(docType) {
+  DOC_STAMP_SIG[docType].stamp = !DOC_STAMP_SIG[docType].stamp;
+  var btn = document.getElementById(docType + '-stamp-btn');
+  if (DOC_STAMP_SIG[docType].stamp) {
+    btn.textContent = '印章: 开';
+    btn.classList.add('btn-gold');
+    btn.classList.remove('btn-outline');
+  } else {
+    btn.textContent = '印章: 关';
+    btn.classList.remove('btn-gold');
+    btn.classList.add('btn-outline');
+  }
+}
+
+function toggleSignature(docType) {
+  DOC_STAMP_SIG[docType].sig = !DOC_STAMP_SIG[docType].sig;
+  var btn = document.getElementById(docType + '-sig-btn');
+  if (DOC_STAMP_SIG[docType].sig) {
+    btn.textContent = '签字: 开';
+    btn.classList.add('btn-gold');
+    btn.classList.remove('btn-outline');
+  } else {
+    btn.textContent = '签字: 关';
+    btn.classList.remove('btn-gold');
+    btn.classList.add('btn-outline');
+  }
+}
+
+// Helper: get stamp/signature HTML for a document's signature area
+function getStampSigHtml(docType) {
+  var state = DOC_STAMP_SIG[docType];
+  var company = App.data.company || {};
+  var stampImg = state.stamp && company.stamp ? '<img src="' + company.stamp + '" style="max-width:120px;max-height:120px;object-fit:contain;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.85">' : '';
+  var sigImg = state.sig && company.signature ? '<img src="' + company.signature + '" style="max-width:100px;max-height:60px;object-fit:contain;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">' : '';
+  return { stampImg: stampImg, sigImg: sigImg };
 }
 
 function loadSettings() {
@@ -3794,6 +3982,8 @@ function loadSettings() {
   setVal('set-tel', c.tel); setVal('set-fax', c.fax); setVal('set-email', c.email);
   setVal('set-website', c.website); setVal('set-vat', c.vat); setVal('set-uscc', c.uscc);
   setVal('set-bank', c.bank);
+  updateStampPreview();
+  updateSignaturePreview();
 }
 
 function autofillCompany() {
